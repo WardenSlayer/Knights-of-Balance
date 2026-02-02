@@ -1181,6 +1181,30 @@ function alchemist_spectrum_spectacles_carddef()
                     </hlayout>
                 </vlayout>]]
             })
+
+    local wildLayout = createLayout({
+        name = "Spectrum Spectacles",
+        art = "art/classes/alchemist/spectrum_spectacles",
+        frame = "frames/alchemist_frames/alchemist_skill_cardframe",
+        cardTypeLabel = "Magic Armor",
+        xmlText =[[<vlayout>
+                    <hlayout flexibleheight="10">
+                        <box flexiblewidth="2">
+                            <tmpro text="{requiresHealth_30}" fontsize="32"/>
+                        </box>
+                        <box flexiblewidth="2">
+                            <tmpro text="{wild}" fontsize="32" />
+                        </box>
+                        <box flexiblewidth="1.5">
+                            <tmpro text="{wild}" fontsize="32" />
+                        </box>
+                        <box flexiblewidth="13">
+                            <tmpro text="  Draw a card, then discard a card" fontsize="16" />
+                        </box>
+                    </hlayout>
+                </vlayout>]]
+            })
+
     --
     return createMagicArmorDef({
         id = "alchemist_spectrum_spectacles",
@@ -1211,6 +1235,8 @@ function alchemist_spectrum_spectacles_carddef()
                 createAbility({
                     id = "wildMain",
                     trigger = uiTrigger,
+                    promptType = showPrompt,
+                    layout = wildLayout,
                     tags = {allyTag},
                     allyFactions = {wildFaction,wildFaction},
                     check = minHealthCurrent(30),

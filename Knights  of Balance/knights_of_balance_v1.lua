@@ -41,6 +41,7 @@ function setupGame(g)
                         --{ qty = 1, card = cleric_brightstar_shield_carddef() },
                         --{ qty = 1, card = fighter_rallying_flag_carddef() },
                         --{ qty = 1, card = barbarian_disorienting_headbutt_carddef() },
+                        --{ qty = 2, card = torgen_rocksplitter_carddef() },
                     },
                     discard = {
                         -- { qty = 2, card = torgen_rocksplitter_carddef() },
@@ -849,6 +850,30 @@ function alchemist_spectrum_spectacles_carddef()
                     </hlayout>
                 </vlayout>]]
             })
+
+    local wildLayout = createLayout({
+        name = "Spectrum Spectacles",
+        art = "art/classes/alchemist/spectrum_spectacles",
+        frame = "frames/alchemist_frames/alchemist_skill_cardframe",
+        cardTypeLabel = "Magic Armor",
+        xmlText =[[<vlayout>
+                    <hlayout flexibleheight="10">
+                        <box flexiblewidth="2">
+                            <tmpro text="{requiresHealth_30}" fontsize="32"/>
+                        </box>
+                        <box flexiblewidth="2">
+                            <tmpro text="{wild}" fontsize="32" />
+                        </box>
+                        <box flexiblewidth="1.5">
+                            <tmpro text="{wild}" fontsize="32" />
+                        </box>
+                        <box flexiblewidth="13">
+                            <tmpro text="  Draw a card, then discard a card" fontsize="16" />
+                        </box>
+                    </hlayout>
+                </vlayout>]]
+            })
+
     --
     return createMagicArmorDef({
         id = "alchemist_spectrum_spectacles",
@@ -879,6 +904,8 @@ function alchemist_spectrum_spectacles_carddef()
                 createAbility({
                     id = "wildMain",
                     trigger = uiTrigger,
+                    promptType = showPrompt,
+                    layout = wildLayout,
                     tags = {allyTag},
                     allyFactions = {wildFaction,wildFaction},
                     check = minHealthCurrent(30),
