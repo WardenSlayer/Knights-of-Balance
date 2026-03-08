@@ -6,39 +6,71 @@ require 'hardai_2'
 require 'aggressiveai'
 
 local debug_mode = true
-local get_debug_cards = function() return {
-                    reserve = {
-                        { qty = 1, card = wizard_treasure_map_carddef() },
-                        { qty = 1, card = ranger_parrot_carddef() },
-                        { qty = 1, card = monk_horn_of_ascendance_carddef() }
+local test_monk = true
+local get_debug_cards = function() 
+    if test_monk then
+        return {
+            reserve = {
+                { qty = 1, card = monk_horn_of_ascendance_carddef() },
+            },
+            deck = {
+                { qty = 4, card = monk_spring_blossom_carddef() },
+            },
+            hand = {
+                { qty = 1, card = monk_horn_of_ascendance_carddef() },
+                { qty = 5, card = monk_spring_blossom_carddef() },
+                { qty = 1, card = monk_resplendent_blossom_carddef() },
+                { qty = 2, card = monk_cobra_fang_carddef() },
+            },
+            discard = {
+                { qty = 2, card = monk_spring_blossom_carddef() },
+            },
+            skills = {
+                { qty = 1, card = monk_wraps_of_strength_carddef() },
+            },
+            buffs = {
+                drawCardsCountAtTurnEndDef(5),
+                discardCardsAtTurnStartDef(),
+                -- This isn't correct when this is used for p1 but it's 
+                -- ok for debugging
+                fatigueCount(40, 1, "FatigueP2"),
+            }
+        }
+    else
+        return {
+            reserve = {
+                { qty = 1, card = wizard_treasure_map_carddef() },
+                { qty = 1, card = ranger_parrot_carddef() },
+                { qty = 1, card = monk_horn_of_ascendance_carddef() }
 
-                    },
-                    deck = {
-                    },
-                    hand = {
-                        { qty = 1, card = monk_horn_of_ascendance_carddef() },
-                        { qty = 1, card = thief_enchanted_garrote_carddef() },
-                        { qty = 1, card = ranger_light_crossbow_carddef() },
-                        { qty = 1, card = ranger_honed_black_arrow_carddef() },
-                        { qty = 2, card = cleric_follower_b_carddef() },
-                        { qty = 2, card = cleric_imperial_sailor_carddef() },
-                        { qty = 1, card = cleric_brightstar_shield_carddef() },
-                        { qty = 1, card = sway_carddef() },
-                    },
-                    discard = {
-                        { qty = 2, card = cleric_follower_b_carddef() },
-                    },
-                    skills = {
-                        { qty = 1, card = cleric_shining_breastplate_carddef() },
-                    },
-                    buffs = {
-                        drawCardsCountAtTurnEndDef(5),
-                        discardCardsAtTurnStartDef(),
-                        -- This isn't correct when this is used for p1 but it's 
-                        -- ok for debugging
-                        fatigueCount(40, 1, "FatigueP2"),
-                    }
-                }
+            },
+            deck = {
+            },
+            hand = {
+                { qty = 1, card = monk_horn_of_ascendance_carddef() },
+                { qty = 1, card = thief_enchanted_garrote_carddef() },
+                { qty = 1, card = ranger_light_crossbow_carddef() },
+                { qty = 1, card = ranger_honed_black_arrow_carddef() },
+                { qty = 2, card = cleric_follower_b_carddef() },
+                { qty = 2, card = cleric_imperial_sailor_carddef() },
+                { qty = 1, card = cleric_brightstar_shield_carddef() },
+                { qty = 1, card = sway_carddef() },
+            },
+            discard = {
+                { qty = 2, card = cleric_follower_b_carddef() },
+            },
+            skills = {
+                { qty = 1, card = cleric_shining_breastplate_carddef() },
+            },
+            buffs = {
+                drawCardsCountAtTurnEndDef(5),
+                discardCardsAtTurnStartDef(),
+                -- This isn't correct when this is used for p1 but it's 
+                -- ok for debugging
+                fatigueCount(40, 1, "FatigueP2"),
+            }
+        }
+    end
 end
 -- Game Setup
 --=======================================================================================================
@@ -633,6 +665,110 @@ The next time you acquire a card this turn, gain 2 {gold}." fontsize="27"/>
                 activations = singleActivation,
                 cost = noCost,
                 effect = gainGoldEffect(2)
+            })
+        }
+    })
+end
+
+--=======================================
+function monk_wraps_of_strength_carddef()
+local card_name = "monk_wraps_of_strength"
+	local cardLayout = createLayout({
+        name = "Wraps of Strength",
+        art = "art/classes/monk/monk_wraps_of_strength",
+        frame = "frames/monk_frames/monk_treasure_cardframe",
+        cardTypeLabel = "Magic Armor",
+        xmlText =[[<hlayout spacing="10" forcewidth="true">
+                    <icon text="{requiresHealth_25}" fontsize="90"/>    <vlayout spacing="1">
+<text text="
+If you have 4 
+Tao Lu 
+actions in play," fontsize="24"/>
+                    <text text="{combat_2} {health_2}" fontsize="40"/>
+                    </vlayout>
+                </hlayout>]]
+    })
+    return createMagicArmorDef({
+        id = card_name,
+        name = "Wraps of Strength",
+        acquireCost = 0,
+        types = { monkType, magicArmorType, treasureType },
+        level = 9,
+        abilities = {
+            createAbility({
+                id = "monk_wraps_of_strength_ability",
+                trigger = autoTrigger,
+                check = getPlayerHealth(currentPid).gte(25).And(getCustomValue(currentPid).gte(4)),
+                effect = gainCombatEffect(2).seq(gainHealthEffect(2))
+            })
+        },
+        layoutPath = "icons/monk/monk_wraps_of_strength",
+        layout = cardLayout
+    })
+end
+
+function monk_cobra_fang_carddef()
+    -- This card draws 1 and grants 2 gold after your next acquisition.
+    local cardLayout = createLayout({
+        name = "Cobra Fang",
+        art = "art/classes/monk/monk_cobra_fang",
+        frame = "frames/monk_frames/monk_action_cardframe",
+        cardTypeLabel = "Action",
+        xmlText =[[<vlayout spacing="20"> 
+  <text text="Gain 1 {combat} for each Tao Lu action in play." fontsize="26"/>
+  <text text="You count as having an extra Tao Lu action this turn." fontsize="26"/>
+</vlayout>]]
+    })
+    local counter_name = "cobra_fang_last_custom_value"
+    local trigger_name = "cobra_fang_add_one_damage"
+    local trigger2_name = "cobra_fang_add_two_damage"
+    return createItemDef({
+        id = "monk_cobra_fang",
+        name = "Horn of Ascendance",
+        acquireCost = 0,
+        types = { actionType, noStealType, monkType, taoLuType },
+        factions = {},
+        playLocation = castPloc,
+        layout = cardLayout,
+        abilities = {
+            createAbility({
+                id = "monk_cobra_fang_on_play_ability",
+                trigger = autoTrigger,
+                activations = singleActivation,
+                cost = noCost,
+                effect = gainCombatEffect(getCustomValue(currentPid))
+                    .seq(resetCounterEffect(counter_name))
+                    .seq(incrementCounterEffect(counter_name, getCustomValue(currentPid)))
+                    .seq(gainCustomValueEffect(2))
+            }),
+            -- We break up the detect and the gain combat ability so that
+            -- this could work properly if you had multiple copies of this
+            -- card in play at the same time.
+            createAbility({
+                id = "monk_cobra_incremental_damage_ability",
+                trigger = abilityTrigger(trigger_name),
+                activations = multipleActivations,
+                cost = noCost,
+                effect = gainCombatEffect(1)
+            }),
+            createAbility({
+                id = "monk_cobra_incremental_damage_ability2",
+                trigger = abilityTrigger(trigger2_name),
+                activations = multipleActivations,
+                cost = noCost,
+                effect = gainCombatEffect(2)
+            }),
+            createAbility({
+                id = "monk_cobra_fang_ability",
+                trigger = autoTrigger,
+                activations = multipleActivations,
+                cost = noCost,
+                check = getCustomValue(currentPid).gte(getCounter(counter_name).add(1)),
+                -- For QOL if we gain 2 Tao Lu from 1 action we show a +1 animation instead of 2 +1
+                -- animations.
+                effect = ifElseEffect(getCustomValue(currentPid).gte(getCounter(counter_name).add(2)),
+                    incrementCounterEffect(counter_name, 2).seq(fireAbilityTriggerEffect(trigger2_name)),
+                    incrementCounterEffect(counter_name, 1).seq(fireAbilityTriggerEffect(trigger_name)))
             })
         }
     })
