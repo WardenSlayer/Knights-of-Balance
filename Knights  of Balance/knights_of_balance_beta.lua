@@ -5,6 +5,41 @@ require 'timeoutai'
 require 'hardai_2'
 require 'aggressiveai'
 
+local debug_mode = true
+local get_debug_cards = function() return {
+                    reserve = {
+                        { qty = 1, card = wizard_treasure_map_carddef() },
+                        { qty = 1, card = ranger_parrot_carddef() },
+                        { qty = 1, card = monk_horn_of_ascendance_carddef() }
+
+                    },
+                    deck = {
+                    },
+                    hand = {
+                        { qty = 1, card = monk_horn_of_ascendance_carddef() },
+                        { qty = 1, card = thief_enchanted_garrote_carddef() },
+                        { qty = 1, card = ranger_light_crossbow_carddef() },
+                        { qty = 1, card = ranger_honed_black_arrow_carddef() },
+                        { qty = 2, card = cleric_follower_b_carddef() },
+                        { qty = 2, card = cleric_imperial_sailor_carddef() },
+                        { qty = 1, card = cleric_brightstar_shield_carddef() },
+                        { qty = 1, card = sway_carddef() },
+                    },
+                    discard = {
+                        { qty = 2, card = cleric_follower_b_carddef() },
+                    },
+                    skills = {
+                        { qty = 1, card = cleric_shining_breastplate_carddef() },
+                    },
+                    buffs = {
+                        drawCardsCountAtTurnEndDef(5),
+                        discardCardsAtTurnStartDef(),
+                        -- This isn't correct when this is used for p1 but it's 
+                        -- ok for debugging
+                        fatigueCount(40, 1, "FatigueP2"),
+                    }
+                }
+end
 -- Game Setup
 --=======================================================================================================
 function setupGame(g)
@@ -25,35 +60,7 @@ function setupGame(g)
                 init = {
                     fromEnv = plid1
                 },
-                cards = {
-                    reserve = {
-                        --{ qty = 1, card = wizard_treasure_map_carddef() }
-                        --{ qty = 1, card = ranger_parrot_carddef() }
-                    },
-                    deck = {
-                    },
-                    hand = {
-                        --{ qty = 1, card = thief_enchanted_garrote_carddef() },
-                        --{ qty = 1, card = ranger_parrot_carddef() },
-                        --{ qty = 1, card = cleric_redeemed_ruinos_carddef()},
-                        --{ qty = 2, card = cleric_follower_b_carddef() },
-                        --{ qty = 2, card = cleric_imperial_sailor_carddef() },
-                        --{ qty = 1, card = cleric_brightstar_shield_carddef() },
-                        --{ qty = 1, card = fighter_rallying_flag_carddef() },
-                        --{ qty = 1, card = barbarian_disorienting_headbutt_carddef() },
-                        --{ qty = 2, card = torgen_rocksplitter_carddef() },
-                    },
-                    discard = {
-                        -- { qty = 2, card = torgen_rocksplitter_carddef() },
-                        -- { qty = 2, card = cleric_follower_b_carddef() },
-                        -- { qty = 1, card = cleric_follower_a_carddef() },
-                        -- { qty = 1, card = cleric_veteran_follower_carddef() },
-                        -- { qty = 1, card = cleric_redeemed_ruinos_carddef() },
-                    },
-                    skills = {
-                        --{ qty = 1, card = fighter_helm_of_fury_carddef() },
-                        --{ qty = 1, card = alchemist_spectrum_spectacles_carddef() }
-                    },
+                cards = debug_mode and get_debug_cards() or {
                     buffs = {
                         drawCardsCountAtTurnEndDef(5),
                         discardCardsAtTurnStartDef(),
@@ -63,33 +70,12 @@ function setupGame(g)
             },
             {
                 id = plid2,
-                --isAi = true,
+                --isAi = debug_mode,
                 startDraw = 5,
                 init = {
                     fromEnv = plid2
                 },
-                cards = {
-                    reserve = {
-                        --{ qty = 1, card = wizard_treasure_map_carddef() }
-                        --{ qty = 1, card = ranger_parrot_carddef() }
-                    },
-                    deck = {
-                    },
-                    hand = {
-                        --{ qty = 1, card = thief_enchanted_garrote_carddef() },
-                        --{ qty = 1, card = ranger_light_crossbow_carddef() },
-                        --{ qty = 1, card = ranger_honed_black_arrow_carddef() },
-                        --{ qty = 2, card = cleric_follower_b_carddef() },
-                        --{ qty = 2, card = cleric_imperial_sailor_carddef() },
-                        --{ qty = 1, card = cleric_brightstar_shield_carddef() },
-                        --{ qty = 1, card = sway_carddef() },
-                    },
-                    discard = {
-                        --{ qty = 2, card = cleric_follower_b_carddef() },
-                    },
-                    skills = {
-                        --{ qty = 1, card = cleric_shining_breastplate_carddef() },
-                    },
+                cards = debug_mode and get_debug_cards() or {
                     buffs = {
                         drawCardsCountAtTurnEndDef(5),
                         discardCardsAtTurnStartDef(),
@@ -105,13 +91,13 @@ function endGame(g)
 end
 
 function setupMeta(meta)
-                meta.name = "knights_of_balance_v1"
+                meta.name = "knights_of_balance_beta"
                 meta.minLevel = 13
                 meta.maxLevel = 24
                 meta.introbackground = ""
                 meta.introheader = ""
                 meta.introdescription = ""
-                meta.path = "C:/Users/xTheC/Desktop/Git Repositories/Knights-of-Balance/Knights of Balance/knights_of_balance_v1.lua"
+                meta.path = "C:/Users/xTheC/Desktop/Git Repositories/Knights-of-Balance/Knights of Balance/knights_of_balance_beta.lua"
                 meta.features = {
 }
 
@@ -606,5 +592,48 @@ function thief_enchanted_garrote_carddef()
                                             nullEffect()) 
                 })
                 },
+    })
+end
+
+function draw_a_card_ability()
+    return createAbility({
+        id = "draw_a_card",
+        trigger = autoTrigger,
+        effect = drawCardsEffect(1)
+    })
+end
+--Monk
+--=========================================
+function monk_horn_of_ascendance2_carddef()
+    -- This card draws 1 and grants 2 gold after your next acquisition.
+    local cardLayout = createLayout({
+        name = "Horn of Ascendance",
+        art = "art/classes/monk/monk_horn_of_ascendance",
+        frame = "frames/monk_frames/monk_item_cardframe",
+        cardTypeLabel = "Item",
+        xmlText =[[<vlayout>
+  <text text="Reserve 1" fontsize="22" fontstyle="italic"/>
+<text text="Draw 1.
+The next time you acquire a card this turn, gain 2 {gold}." fontsize="27"/>                           
+</vlayout>]]
+    })
+    return createItemDef({
+        id = "monk_horn_of_ascendance",
+        name = "Horn of Ascendance",
+        acquireCost = 0,
+        types = { itemType, noStealType, monkType, hornType,reserveType },
+        factions = {},
+        playLocation = castPloc,
+        layout = cardLayout,
+        abilities = {
+            draw_a_card_ability(),
+            createAbility({
+                id = "monk_horn_of_ascendance_ability",
+                trigger = onAcquireGlobalTrigger,
+                activations = singleActivation,
+                cost = noCost,
+                effect = gainGoldEffect(2)
+            })
+        }
     })
 end
