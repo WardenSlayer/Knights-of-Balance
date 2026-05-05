@@ -8,15 +8,20 @@ require 'aggressiveai'
 local debug_mode = false
 local test_monk = false
 local test_cleric = false
+local test_bard = false
 function get_debug_cards(is_p1)
     player_buffs = is_p1 and {
         drawCardsCountAtTurnEndDef(5),
         discardCardsAtTurnStartDef(),
         replace_spring_blossom_buff(),
+        replace_bard_dagger_buff(),
+        replace_necromancer_dagger_buff(),
+        end_of_turn_toughness_converter_buff(),
         fatigueCount(40, 1, "FatigueP1"),
     } or {
         drawCardsCountAtTurnEndDef(5),
         discardCardsAtTurnStartDef(),
+        end_of_turn_toughness_converter_buff(),
         fatigueCount(40, 1, "FatigueP2"),
     } 
     if test_monk then
@@ -64,6 +69,24 @@ function get_debug_cards(is_p1)
             },
             buffs = player_buffs
         }
+    elseif test_bard then
+        return {
+            reserve = {
+            },
+            deck = {
+                { qty = 1, card = dagger_carddef()}
+            },
+            hand = {
+                { qty = 1, card = bard_necros_dirge_carddef() },
+                { qty = 1, card = bard_dancing_blade_carddef() },
+            },
+            discard = {
+            },
+            skills = {
+                { qty = 1, card = bard_collecting_cap_carddef() },
+            },
+            buffs = player_buffs
+        }
     else
         return {
             reserve = {
@@ -73,8 +96,11 @@ function get_debug_cards(is_p1)
 
             },
             deck = {
+                { qty = 1, card = dagger_carddef() },
+                { qty = 1, card = necromancer_bloodrose_carddef() },
             },
             hand = {
+                { qty = 1, card = thief_blinding_powder_carddef() },
                 { qty = 1, card = monk_horn_of_ascendance_carddef() },
                 { qty = 1, card = thief_enchanted_garrote_carddef() },
                 { qty = 1, card = ranger_light_crossbow_carddef() },
@@ -91,6 +117,7 @@ function get_debug_cards(is_p1)
             },
             skills = {
                 { qty = 1, card = cleric_shining_breastplate_carddef() },
+                { qty = 1, card = druid_grass_weave_sash_carddef() },
             },
             buffs = player_buffs
         }
@@ -100,6 +127,7 @@ end
 --=======================================================================================================
 function setupGame(g)
     registerCards(g, {
+        toughness_token_carddef(),
     })
 
     standardSetup(g, {
@@ -121,6 +149,9 @@ function setupGame(g)
                         drawCardsCountAtTurnEndDef(5),
                         discardCardsAtTurnStartDef(),
                         replace_spring_blossom_buff(),
+                        replace_bard_dagger_buff(),
+                        replace_necromancer_dagger_buff(),
+                        end_of_turn_toughness_converter_buff(),
                         fatigueCount(40, 1, "FatigueP1"),
                     }
                 }
@@ -134,6 +165,7 @@ function setupGame(g)
                 },
                 cards = debug_mode and get_debug_cards(false) or {
                     buffs = {
+                        end_of_turn_toughness_converter_buff(),
                         drawCardsCountAtTurnEndDef(5),
                         discardCardsAtTurnStartDef(),
                         fatigueCount(40, 1, "FatigueP2"),
@@ -316,6 +348,168 @@ function ranger_honed_black_arrow_carddef()
                 },
     })
 end
+
+--Bard
+--=======================================================================================================
+
+-- Bard collecting cap is a 20 Health Threshold magic armor. 
+-- Activate: +1 gold OR +3 healing if you have a song in play.
+function bard_collecting_cap_carddef()
+    local cardLayout = createLayout({
+        name = "Collecting Cap",
+        art = "art/classes/bard/bard_collecting_cap",
+        frame = "frames/bard_frames/bard_treasure_cardframe",
+        cardTypeLabel = "Magical Armor",
+        xmlText = [[<vlayout spacing="1" forcewidth="true">
+                        <hlayout spacing="1" forcewidth="true">
+                            <icon text="{requiresHealth_20}" fontsize="90"/>    
+                            <text text="If you have 
+a song in play 
+gain {gold_1} or {health_3}." fontsize="30"/>
+                        </hlayout>
+                    </vlayout>]]
+    })
+
+    return createMagicArmorDef({
+        id = "bard_collecting_cap",
+        name = "Collecting Cap",
+        types = { bardType, magicArmorType, treasureType, headType },
+        layout = cardLayout,
+        layoutPath = "icons/bard/bard_collecting_cap",
+        abilities = {
+            createAbility({
+                id = "bard_collecting_cap_activate",
+                trigger = uiTrigger,
+                cost = expendCost,
+                check = getPlayerHealth(currentPid).gte(20).And(selectLoc(currentInPlayLoc).union(selectLoc(currentCastLoc)).where(isCardType(songType)).count().gte(1)),
+                effect = pushChoiceEffect({
+                    choices = {
+                        {
+                            effect = gainGoldEffect(1),
+                            layout = createLayout({
+                                name = "Gain 1 Gold",
+                                art = "art/classes/bard/bard_collecting_cap",
+                                xmlText = [[<icon text="{gold_1}" fontsize="60"/>]]
+                            }),
+                        },
+                        {
+                            condition = getPlayerHealth(currentPid).eq(getPlayerMaxHealth(currentPid)).invert(),
+                            effect = healPlayerEffect(currentPid, 3),
+                            layout = createLayout({
+                                name = "Gain 3 Health",
+                                art = "art/classes/bard/bard_collecting_cap",
+                                xmlText = [[<icon text="{health_3}" fontsize="60"/>]]
+                            }),
+                        }
+                    }
+                })
+            })
+        }
+    })
+end
+--===============================================
+-- Bard dancing blade is a non guard with 1 defence.  It grants 2 damage and 1 gold and has auto trigger.
+function bard_dancing_blade_carddef()
+    local cardLayout = createLayout({
+        name = "Dancing Blade",
+        art = "art/classes/bard/bard_dancing_blade",
+        frame = "frames/bard_frames/bard_champion_cardframe",
+        cardTypeLabel = "Champion",
+        xmlText = [[<hlayout forceheight="true" spacing="30">
+                        <icon text="{expend}" fontsize="50"/>
+                        <icon text="{combat_2}{gold_1}" fontsize="70"/>
+                        <spacer /> <spacer />
+                    </hlayout>]],
+        isGuard = false,
+        types = { championType, noStealType, bardType},
+        health = 1,
+    })
+
+    return createChampionDef({
+        id = "bard_dancing_blade",
+        name = "Dancing Blade",
+        acquireCost = 0,
+        health = 1,
+        isGuard = false,
+        layout = cardLayout,
+        factions = {},
+        types = { championType, noStealType, bardType},
+        layoutPath = "icons/bard/bard_dancing_blade",
+        abilities = {
+            createAbility({
+                id = "bard_dancing_blade_ability",
+                effect = gainCombatEffect(2).seq(gainGoldEffect(1)),
+                cost = expendCost,
+                trigger = autoTrigger,
+                tags = { gainCombatTag, aiPlayAllTag }
+            })
+        }
+    })
+end
+
+-- Bard necros dirge is a necros faction card that grants 2 combat and 
+-- the next time you acquire a necros champion this turn you may sacrifice
+-- a card in your hand or discard pile.
+function bard_necros_dirge_carddef()
+    local cardLayout = createLayout({
+        name = "Necros Dirge",
+        art = "art/classes/bard/bard_necros_dirge",
+        frame = "frames/bard_frames/bard_action_cardframe",
+        cardTypeLabel = "Action",
+        xmlText = [[<vlayout forceheight="false" spacing="6">
+                        <hlayout spacing="10">
+                        <icon text="{combat_2}" fontsize="50"/>
+                        </hlayout>    
+                        <hlayout forcewidth="true" spacing="10">
+                            <vlayout  forceheight="false">
+                                <text text="The next time you acquire a {necro} champion this turn you may sacrifice a card in your hand or discard pile." fontsize="20"/>
+                            </vlayout>
+                        </hlayout>
+                    </vlayout>]],
+    })
+    local sacrificeTrigger = "necros_dirge_sacrifice_trigger"
+    return createActionDef({
+        id = "bard_necros_dirge",
+        name = "Necros Dirge",
+        acquireCost = 0,
+        layout = cardLayout,
+        factions = {necrosFaction},
+        types = { actionType, bardType, songType},
+        layoutPath = "icons/bard/bard_necros_dirge",
+        abilities = {
+            createAbility({
+                id = "bard_necros_dirge_ability",
+                effect = gainCombatEffect(2),
+                trigger = autoTrigger,
+                activations = singleActivation,
+                tags = { gainCombatTag, aiPlayAllTag }
+            }),
+            createAbility({
+                id = "bard_necros_dirge_sacrifice_ability",
+                effect = pushTargetedEffect({
+                            desc="Necros Dirge: sacrifice a card from hand or discard.",
+                            min=0,
+                            max=1,
+                            validTargets = selectLoc(currentHandLoc).union(selectLoc(currentDiscardLoc)),
+                            targetEffect = sacrificeTarget(),      
+                        }),
+                trigger = abilityTrigger(sacrificeTrigger),
+                activations = singleActivation,
+            })
+        },
+        cardEffectAbilities = {
+            createCardEffectAbility({
+                trigger = acquiredCardTrigger,
+                effect = ifEffect(
+                    selectTargets().where(isCardChampion().And(isCardFaction(necrosFaction))).count().gte(1),
+                    fireAbilityTriggerEffect(sacrificeTrigger)
+                ),
+                activations = multipleActivations,
+            })
+        }
+    })
+end
+
 
 --Cleric
 --=======================================================================================================
@@ -661,6 +855,74 @@ end
 
 --Thief
 --=======================================================================================================
+-- Blinding powders grants 3 gold, lets you return target champion to the bottom of its owners deck.
+-- It has a self sacrifice ability to cause the opponent to discard a card.  It is a reserve 2 card.
+function thief_blinding_powder_carddef()
+    local cardLayout = createLayout({
+        name = "Blinding Powder",
+        art = "art/treasures/thief_blinding_powder",
+        frame = "frames/Thief_CardFrame",
+        xmlText = [[
+                    <vlayout forceheight="false" spacing="5">
+                        <vlayout forceheight="false" spacing = "0">
+                            <text text="Reserve 2" fontsize="16" fontstyle="italic"/>
+                            <icon text="{gold_3}" fontsize="40"/>
+                            <text text="You may return target champion to the bottom of its owner's deck" fontsize="16"/> 
+                        </vlayout>
+                        <divider/>
+                        <hlayout forcewidth="true" spacing="10">
+                            <icon text="{scrap}" fontsize="30"/>
+                            <text text="Target opponent discards a card." fontsize="16"/>
+                            <icon text=" " fontsize="20"/>
+                        </hlayout>
+                    </vlayout>
+                    ]]
+    })
+
+    local return_to_deck_trigger = "return_to_deck_trigger"
+    local return_to_deck_ability = createAbility({
+        id = "return_to_deck_ability",
+        trigger = abilityTrigger(return_to_deck_trigger),
+        effect = moveToBottomDeckTarget(true, 0).apply(selectSource())
+    })
+    local return_to_deck_slot = createAbilitySlot({
+        ability = return_to_deck_ability,
+        expiry = { neverExpiry }
+    })
+
+    return createItemDef({
+        id = "thief_blinding_powder",
+        name = "Blinding Powder",
+        acquireCost = 0,
+        cardTypeLabel = "Item",
+        types = { itemType, noStealType, thiefType, reserveType},
+        factions = {},
+        layout = cardLayout,
+        playLocation = castPloc,
+        abilities = {
+            createAbility({
+                id = "thief_blinding_powder_onplay",
+                trigger = autoTrigger,
+                activations = singleActivation,
+                effect = gainGoldEffect(3).seq(pushTargetedEffect({
+                    desc = "Return target champion to the bottom of its owner's deck.",
+                    min = 0,
+                    max = 1,
+                    validTargets = selectLoc(loc(currentPid, inPlayPloc)).union(selectLoc(loc(oppPid, inPlayPloc))).where(isCardChampion()),
+                    targetEffect = addSlotToTarget(return_to_deck_slot).seq(fireAbilityTriggerForTarget(return_to_deck_trigger)),
+                }))
+            }),
+            createAbility({
+                id = "thief_blinding_powder_scrap",
+                trigger = uiTrigger,
+                activations = singleActivation,
+                cost = sacrificeSelfCost,
+                effect = oppDiscardEffect(1)
+            }),
+        }
+    })
+end
+
 function thief_silent_boots_carddef()
     --
     local cardLayout = createLayout({
@@ -939,7 +1201,7 @@ function monk_cobra_fang_carddef()
                 activations = multipleActivations,
                 cost = noCost,
                 check = getCustomValue(currentPid).gte(getCounter(counter_name).add(1)),
-                -- For QOL if we gain 2 Tao Lu from 1 action we show a +1 animation instead of 2 +1
+                -- For QOL if we gain 2 Tao Lu from 1 action we show a +2 animation instead of 2 +1
                 -- animations.
                 effect = ifElseEffect(getCustomValue(currentPid).gte(getCounter(counter_name).add(2)),
                     incrementCounterEffect(counter_name, 2).seq(fireAbilityTriggerEffect(trigger2_name)),
@@ -970,6 +1232,131 @@ function replace_spring_blossom_buff()
             createAbility({
                 id = "fix_monk_gold_upgrade_ability",
                 trigger = startOfGameTrigger,
+                effect = ef
+            })
+        }
+    })
+end
+
+function replace_bard_dagger_buff()
+    local dagger_selector = function(player_id) 
+        return selectLoc(loc(player_id, handPloc)).union(selectLoc(loc(player_id, deckPloc)))
+            .where(isCardName("dagger")) 
+    end
+    local player_has_necros_dirge = function(player_id) 
+        return selectLoc(loc(player_id, handPloc)).union(selectLoc(loc(player_id, deckPloc)))
+            .where(isCardName("bard_necros_dirge")).count().gte(1) 
+    end
+    local ef = ifEffect(player_has_necros_dirge(currentPid),
+            randomTarget(const(1), transformTarget("gold"))
+                .apply(dagger_selector(currentPid)))
+        .seq(ifEffect(player_has_necros_dirge(oppPid),
+            randomTarget(const(1), transformTarget("gold"))
+                .apply(dagger_selector(oppPid))))
+        .seq(sacrificeSelf())
+
+    return createGlobalBuff({
+        id = "replace_bard_dagger",
+        name = "Bard Dagger Replacer",
+        abilities = {
+            createAbility({
+                id = "replace_bard_dagger_ability",
+                trigger = startOfGameTrigger,
+                effect = ef
+            })
+        }
+    })
+end
+
+function replace_necromancer_dagger_buff()
+    local dagger_selector = function(player_id) 
+        return selectLoc(loc(player_id, handPloc)).union(selectLoc(loc(player_id, deckPloc)))
+            .where(isCardName("dagger")) 
+    end
+    local player_has_bone_dance_or_bloodrose = function(player_id) 
+        return selectLoc(loc(player_id, handPloc)).union(selectLoc(loc(player_id, deckPloc)))
+            .where(isCardName("necromancer_bone_dance").Or(isCardName("necromancer_bloodrose"))).count().gte(1) 
+    end
+    local ef = ifEffect(player_has_bone_dance_or_bloodrose(currentPid),
+            randomTarget(const(1), transformTarget("gold"))
+                .apply(dagger_selector(currentPid)))
+        .seq(ifEffect(player_has_bone_dance_or_bloodrose(oppPid),
+            randomTarget(const(1), transformTarget("gold"))
+                .apply(dagger_selector(oppPid))))
+        .seq(sacrificeSelf())
+
+    return createGlobalBuff({
+        id = "replace_necromancer_dagger",
+        name = "Necromancer Dagger Replacer",
+        abilities = {
+            createAbility({
+                id = "replace_necromancer_dagger_ability",
+                trigger = startOfGameTrigger,
+                effect = ef
+            })
+        }
+    })
+end
+
+-- This is a global buff that converts toughness into a guard token
+-- at the end of the turn.  The token is sacrificed at the beginning
+-- of your next turn.
+
+-- We use this to track the players current toughness because we can't
+-- access the players current toughness directly.
+local old_gain_toughness = gainToughnessEffect
+function gainToughnessEffect(amount)
+    return incrementCounterEffect("toughness_counter", amount).seq(old_gain_toughness(amount))
+end
+
+function toughness_token_carddef()
+    local cardLayout = createLayout({
+        name = "Toughness Token",
+        art = "art/epicart/shield_of_tarken",
+        frame = "frames/Warrior_CardFrame",
+        cardTypeLabel = "Champion",
+        isGuard = true,
+        health = 1,
+        types = { },
+        text = "Toughness token."
+    })
+    return createChampionDef({
+        id = "toughness_token",
+        name = "Toughness Token",
+        acquireCost = 0,
+        health = 1,
+        isGuard = true,
+        layout = cardLayout,
+        types = { championType, humanType, fighterType },
+        factions = {},
+        abilities = {
+            createAbility({
+                id = "toughness_token_self_sacrifice",
+                trigger = startOfTurnTrigger,
+                activations = singleActivation,
+                effect = sacrificeSelf()
+            }),
+            sacrificeSelfOnLeavePlayAbility("toughness_token_leave_play_self_sacrifice")
+        }
+    })
+end
+
+function end_of_turn_toughness_converter_buff()
+    local ef = ifEffect(getCounter("toughness_counter").gte(1), 
+        old_gain_toughness(getCounter("toughness_counter").negate())
+            .seq(createCardEffect(toughness_token_carddef(), currentInPlayLoc))
+            .seq(grantHealthTarget(getCounter("toughness_counter").add(-1)).apply(
+                    selectLoc(currentInPlayLoc).where(isCardName("toughness_token"))
+                ))
+            .seq(resetCounterEffect("toughness_counter"))
+    )
+    return createGlobalBuff({
+        id = "end_of_turn_toughness_converter_buff",
+        name = "Toughness Converter",
+        abilities = {
+            createAbility({
+                id = "end_of_turn_toughness_converter_buff_ability",
+                trigger = endOfTurnTrigger,
                 effect = ef
             })
         }
