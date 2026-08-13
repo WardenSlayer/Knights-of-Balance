@@ -5,10 +5,19 @@ require 'timeoutai'
 require 'hardai_2'
 require 'aggressiveai'
 
-local debug_mode = false
-local test_monk = false
-local test_cleric = false
+local debug_mode = true
+local test_alchhemist = false
+local test_barbarian = false
 local test_bard = false
+local test_cleric = false
+local test_druid = false
+local test_fighter = false
+local test_monk = false
+local test_necromancer = false
+local test_ranger = false
+local test_thief = false
+local test_wizard = false
+--
 function get_debug_cards(is_p1)
     player_buffs = is_p1 and {
         drawCardsCountAtTurnEndDef(5),
@@ -87,6 +96,26 @@ function get_debug_cards(is_p1)
             },
             buffs = player_buffs
         }
+    elseif test_ranger then
+        return {
+            reserve = {
+            },
+            deck = {
+            },
+            hand = {
+                { qty = 1, card = ranger_honed_black_arrow_carddef() },
+                { qty = 1, card = ranger_light_crossbow_carddef() },
+            },
+            discard = {
+                { qty = 1, card = ranger_honed_black_arrow_carddef() },
+                { qty = 1, card = ranger_black_arrow_carddef() },
+                { qty = 1, card = ranger_light_crossbow_carddef() },
+            },
+            skills = {
+                { qty = 1, card = ranger_snapshot_carddef() },
+            },
+            buffs = player_buffs
+        }
     else
         return {
             reserve = {
@@ -110,6 +139,8 @@ function get_debug_cards(is_p1)
                 { qty = 1, card = cleric_brightstar_shield_carddef() },
                 { qty = 1, card = cleric_everburning_candle_carddef() },
                 { qty = 1, card = sway_carddef() },
+                { qty = 1, card = bard_dancing_blade_carddef() },
+                { qty = 1, card = bard_necros_dirge_carddef() },
             },
             discard = {
                 { qty = 2, card = cleric_follower_b_carddef() },
@@ -118,6 +149,7 @@ function get_debug_cards(is_p1)
             skills = {
                 { qty = 1, card = cleric_shining_breastplate_carddef() },
                 { qty = 1, card = druid_grass_weave_sash_carddef() },
+                { qty = 1, card = bard_collecting_cap_carddef() },
             },
             buffs = player_buffs
         }
@@ -348,6 +380,60 @@ function ranger_honed_black_arrow_carddef()
                 },
     })
 end
+
+
+--arrowType bowType
+
+function ranger_snapshot_carddef()
+    local cardLayout = createLayout({
+        name = "Snapshot",
+        art = "art/t_snapshot",
+        frame = "frames/Ranger_armor_frame",
+        cardTypeLabel = "Ability",
+        xmlText = [[<vlayout>
+                    <hlayout flexibleheight="7.7">
+                            <tmpro text="{scrap}" fontsize="40"      flexiblewidth="1.5"/>
+                            <vlayout flexiblewidth="8">
+                                <tmpro text="You may stun a target champion. &lt;br&gt;You may put up to two arrows/bows from your discard pile into your hand. &lt;br&gt;Draw 1. &lt;size=90%&gt;&lt;/size&gt;" fontsize="18" alignment="Left" flexibleheight="1"/>>
+                            </vlayout>
+                    </hlayout>
+                </vlayout>]]
+                    })
+
+    return createHeroAbilityDef({
+        id = "ranger_snapshot",
+        name = "Snapshot",
+        cardTypeLabel = "Ability",
+        playLocation = skillsPloc,
+        types = { rangerType, abilityType},
+        tags = { rangerGalleryCardTag },
+        layout = cardLayout,
+        layoutPath = "icons/ranger_snapshot",
+        abilities = {
+            createAbility({
+                id = "ranger_snapshot_abbility",
+                effect = pushTargetedEffect({
+						desc = "Stun target champion",
+						min = 0,
+						max = 1,
+						validTargets = selectLoc(loc(oppPid, inPlayPloc)).where(isCardStunnable()),
+						targetEffect = stunTarget().seq(drawCardsEffect(1))
+                                        .seq(pushTargetedEffect({
+                                                desc = "Choose up to two arrows/bows from your discard pile to put into your hand.",
+                                                min = 0,
+                                                max = 2,
+                                                validTargets = selectLoc(loc(currentPid, discardPloc)).where(isCardType(arrowType).Or(isCardType(bowType))),
+                                                targetEffect = moveTarget(currentHandLoc),
+                                            })),
+					}),
+                cost = sacrificeSelfCost,
+                trigger = uiTrigger,
+                promptType = showPrompt,
+                layout = cardLayout,
+            })
+        }
+        })
+    end
 
 --Bard
 --=======================================================================================================
@@ -867,14 +953,8 @@ function thief_blinding_powder_carddef()
                         <vlayout forceheight="false" spacing = "0">
                             <text text="Reserve 2" fontsize="16" fontstyle="italic"/>
                             <icon text="{gold_3}" fontsize="40"/>
-                            <text text="You may return target champion to the bottom of its owner's deck" fontsize="16"/> 
+                            <text text="You may return target champion to the bottom of its owner's deck" fontsize="20"/> 
                         </vlayout>
-                        <divider/>
-                        <hlayout forcewidth="true" spacing="10">
-                            <icon text="{scrap}" fontsize="30"/>
-                            <text text="Target opponent discards a card." fontsize="16"/>
-                            <icon text=" " fontsize="20"/>
-                        </hlayout>
                     </vlayout>
                     ]]
     })
@@ -911,13 +991,6 @@ function thief_blinding_powder_carddef()
                     validTargets = selectLoc(loc(currentPid, inPlayPloc)).union(selectLoc(loc(oppPid, inPlayPloc))).where(isCardChampion()),
                     targetEffect = addSlotToTarget(return_to_deck_slot).seq(fireAbilityTriggerForTarget(return_to_deck_trigger)),
                 }))
-            }),
-            createAbility({
-                id = "thief_blinding_powder_scrap",
-                trigger = uiTrigger,
-                activations = singleActivation,
-                cost = sacrificeSelfCost,
-                effect = oppDiscardEffect(1)
             }),
         }
     })
