@@ -1283,7 +1283,44 @@ function monk_cobra_fang_carddef()
         }
     })
 end
-
+--Druid
+--=========================================
+function druid_grass_weave_sash_carddef()
+    local cardLayout = createLayout({
+        name = "Grass-Weave Sash",
+        art = "art/classes/druid/grass_weave_sash",
+        frame = "frames/druid_frames/druid_treasure_cardframe",
+        cardTypeLabel = "Magical Armor",
+        xmlText = [[
+                    <vlayout>
+<hlayout>
+<tmpro text="{requiresHealth_10}" flexiblewidth="1" flexibleheight="1" fontsize="70"/>
+<vlayout>
+<tmpro text="Gain 2 Toughness." flexiblewidth="7" flexibleheight="1" fontsize="26" />
+<tmpro text="At the end of your turn,
+put a token into play
+with {guard} = Toughness." fontstyle="italic" flexiblewidth="6" flexibleheight="1" fontsize="20" />
+</vlayout>
+</hlayout>
+</vlayout>
+                ]]
+    })
+    return createMagicArmorDef({
+        id = "druid_grass_weave_sash",
+        name = "Grass-Weave Sash",
+        types = { druidType, magicArmorType, chestType, treasureType },
+        layout = cardLayout,
+        layoutPath = "icons/druid/druid_grass_weave_sash",
+        abilities = {
+            createAbility({
+                id = "main",
+                trigger = autoTrigger,
+                check = getPlayerHealth(currentPid).gte(10),
+                effect = gainToughnessEffect(2)
+            })
+        }
+    })
+end
 --====================================
 function replace_spring_blossom_buff()
     local spring_blossom_selector = function(player_id) 
