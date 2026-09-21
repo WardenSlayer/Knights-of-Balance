@@ -435,6 +435,173 @@ function ranger_snapshot_carddef()
         })
     end
 
+function ranger_twin_shot_carddef()
+	local cardLayout = createLayout({
+		name = "Twin Shot",
+		art = "art/t_ranger_twin_shot",
+		frame = "frames/ranger_cardframe",
+        xmlText = [[
+                    <vlayout>
+<hlayout>
+<tmpro text="&lt;space=-0.3em&gt;{scrap}" flexibleheight="1" flexiblewidth="1" fontsize="55"/>
+<vlayout>
+<tmpro text="Deal 3 damage to opponent or stun a champion, ignoring guards. If you stun a champion this way, draw 1. Do this twice." flexibleheight="10" flexiblewidth="5" fontsize="21"/>
+</vlayout>
+</hlayout>
+</vlayout>
+                ]]
+	})
+    local champion = createLayout({
+		name = "Twin Shot",
+		art = "art/t_ranger_twin_shot",
+		frame = "frames/ranger_cardframe",
+        xmlText = [[
+                    <vlayout>
+<tmpro text="Stun target champion." flexibleheight="1" flexiblewidth="1" fontsize="32"/>
+</vlayout>
+                ]]
+	})
+    local opponent = createLayout({
+		name = "Twin Shot",
+		art = "art/t_ranger_twin_shot",
+		frame = "frames/ranger_cardframe",
+        xmlText = [[
+                    <vlayout>
+<tmpro text="Deal 3 damage
+to opponent." flexibleheight="1" flexiblewidth="1" fontsize="32"/>
+</vlayout>
+                ]]
+	})
+    local function makeShotEffect()
+    return ifElseEffect(
+        selectLoc(loc(oppPid, inPlayPloc)).where(isCardStunnable()).count().eq(0),
+        hitOpponentEffect(3),
+        pushChoiceEffect({
+            choices = {
+                {
+                    layout = champion,
+                    effect = pushTargetedEffect({
+                        desc = "Stun target champion.",
+                        validTargets = selectLoc(loc(oppPid, inPlayPloc)).where(isCardStunnable()),
+                        min = 1,
+                        max = 1,
+                        targetEffect = stunTarget()
+                            .seq(ignoreTarget(drawCardsWithAnimation(1)))
+                    })
+                },
+                {
+                    layout = opponent,
+                    effect = hitOpponentEffect(3)
+                }
+            }
+        })
+    )
+end
+	return createHeroAbilityDef({
+		id = "ranger_twin_shot",
+		name = "Twin Shot",
+        cardTypeLabel = "Ability",
+        playLocation = skillsPloc,
+		types = { abilityType },
+		layout = cardLayout,
+		abilities = {
+			createAbility({
+				id = "main",
+				trigger = uiTrigger,
+                promptType = showPrompt,
+                layout = cardLayout,
+                cost = sacrificeSelfCost,
+                effect = makeShotEffect()
+                    .seq(appendEffect(makeShotEffect()))
+			})
+        }
+	})
+end
+
+function ranger_triple_shot_carddef()
+	local cardLayout = createLayout({
+		name = "Triple Shot",
+		art = "art/t_triple_shot",
+		frame = "frames/ranger_cardframe",
+        xmlText = [[
+                    <vlayout>
+<hlayout>
+<tmpro text="&lt;space=-0.3em&gt;{scrap}" flexibleheight="1" flexiblewidth="1" fontsize="55"/>
+<vlayout>
+<tmpro text="Deal 3 damage to opponent or stun a champion, ignoring guards. If you stun a champion this way, draw 1. Do this thrice." flexibleheight="10" flexiblewidth="5" fontsize="21"/>
+</vlayout>
+</hlayout>
+</vlayout>
+                ]]
+	})
+    local champion = createLayout({
+		name = "Triple Shot",
+		art = "art/t_triple_shot",
+		frame = "frames/ranger_cardframe",
+        xmlText = [[
+                    <vlayout>
+<tmpro text="Stun target champion." flexibleheight="1" flexiblewidth="1" fontsize="32"/>
+</vlayout>
+                ]]
+	})
+    local opponent = createLayout({
+		name = "Triple Shot",
+		art = "art/t_triple_shot",
+		frame = "frames/ranger_cardframe",
+        xmlText = [[
+                    <vlayout>
+<tmpro text="Deal 3 damage
+to opponent." flexibleheight="1" flexiblewidth="1" fontsize="32"/>
+</vlayout>
+                ]]
+	})
+    local function makeShotEffect()
+    return ifElseEffect(
+        selectLoc(loc(oppPid, inPlayPloc)).where(isCardStunnable()).count().eq(0),
+        hitOpponentEffect(3),
+        pushChoiceEffect({
+            choices = {
+                {
+                    layout = champion,
+                    effect = pushTargetedEffect({
+                        desc = "Stun target champion.",
+                        validTargets = selectLoc(loc(oppPid, inPlayPloc)).where(isCardStunnable()),
+                        min = 1,
+                        max = 1,
+                        targetEffect = stunTarget()
+                            .seq(ignoreTarget(drawCardsWithAnimation(1)))
+                    })
+                },
+                {
+                    layout = opponent,
+                    effect = hitOpponentEffect(3)
+                }
+            }
+        })
+    )
+end
+	return createHeroAbilityDef({
+		id = "ranger_triple_shot",
+		name = "Triple Shot",
+        cardTypeLabel = "Ability",
+        playLocation = skillsPloc,
+		types = { abilityType },
+		layout = cardLayout,
+		abilities = {
+			createAbility({
+				id = "main",
+				trigger = uiTrigger,
+                promptType = showPrompt,
+                layout = cardLayout,
+                cost = sacrificeSelfCost,
+                effect = makeShotEffect()
+    .seq(appendEffect(makeShotEffect()))
+    .seq(appendEffect(makeShotEffect()))
+			})
+        }
+	})
+end
+
 --Bard
 --=======================================================================================================
 
