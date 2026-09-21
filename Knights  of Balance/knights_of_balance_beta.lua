@@ -1315,6 +1315,48 @@ with {guard} = Toughness." fontstyle="italic" flexiblewidth="6" flexibleheight="
         }
     })
 end
+--Necromancer
+--=========================================
+function necromancer_voidstone_carddef()
+	local cardLayout = createLayout({
+		name = "Voidstone",
+		art = "art/classes/necromancer/voidstone",
+		frame = "frames/necromancer_frames/necromancer_item_cardframe",
+        xmlText = [[
+                    <vlayout>
+<hlayout>
+<tmpro text="{gold_1}" flexibleheight="6" flexiblewidth="4" fontsize="50"/>
+</hlayout>
+<tmpro text=" " flexibleheight="1" flexiblewidth="4" fontsize="50"/>
+<tmpro text="You may sacrifice a card in your discard pile or the market. If you sacrifice a champion this way, put a Skeleton Warrior into play." flexibleheight="9" flexiblewidth="1" fontsize="19"/>
+</vlayout>
+                ]]
+	})
+	return createItemDef({
+		id = "necromancer_voidstone",
+		name = "Voidstone",
+		types = { necromancerType, itemType },
+		layout = cardLayout,
+		playLocation = castPloc,
+		abilities = {
+			createAbility({
+				id = "main",
+				trigger = autoTrigger,
+                effect = gainGoldEffect(1)
+                    .seq(pushTargetedEffect({
+                        desc = "Sacrifice a card in your discard pile or the market.",
+                        validTargets = selectLoc(currentDiscardLoc).union(selectLoc(centerRowLoc)),
+                        min = 0,
+                        max = 1,
+                        targetEffect = ignoreTarget(ifEffect(
+    									selectTargets().where(isCardChampion()).count().gte(1),
+    									createCardEffect(necromancer_skeleton_warrior_carddef(), currentInPlayLoc)
+											)).seq(sacrificeTarget())
+                    }))
+			})
+        }
+	})
+end
 --====================================
 function replace_spring_blossom_buff()
     local spring_blossom_selector = function(player_id) 
