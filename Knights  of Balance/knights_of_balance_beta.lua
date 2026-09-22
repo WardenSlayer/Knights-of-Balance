@@ -474,7 +474,7 @@ to opponent." flexibleheight="1" flexiblewidth="1" fontsize="32"/>
 	})
     local function makeShotEffect()
     return ifElseEffect(
-        selectLoc(loc(oppPid, inPlayPloc)).where(isCardStunnable()).count().eq(0),
+        selectLoc(loc(oppPid, inPlayPloc)).count().eq(0),
         hitOpponentEffect(3),
         pushChoiceEffect({
             choices = {
@@ -482,7 +482,7 @@ to opponent." flexibleheight="1" flexiblewidth="1" fontsize="32"/>
                     layout = champion,
                     effect = pushTargetedEffect({
                         desc = "Stun target champion.",
-                        validTargets = selectLoc(loc(oppPid, inPlayPloc)).where(isCardStunnable()),
+                        validTargets = selectLoc(loc(oppPid, inPlayPloc)),
                         min = 1,
                         max = 1,
                         targetEffect = stunTarget()
@@ -557,7 +557,7 @@ to opponent." flexibleheight="1" flexiblewidth="1" fontsize="32"/>
 	})
     local function makeShotEffect()
     return ifElseEffect(
-        selectLoc(loc(oppPid, inPlayPloc)).where(isCardStunnable()).count().eq(0),
+        selectLoc(loc(oppPid, inPlayPloc)).count().eq(0),
         hitOpponentEffect(3),
         pushChoiceEffect({
             choices = {
@@ -565,7 +565,7 @@ to opponent." flexibleheight="1" flexiblewidth="1" fontsize="32"/>
                     layout = champion,
                     effect = pushTargetedEffect({
                         desc = "Stun target champion.",
-                        validTargets = selectLoc(loc(oppPid, inPlayPloc)).where(isCardStunnable()),
+                        validTargets = selectLoc(loc(oppPid, inPlayPloc)),
                         min = 1,
                         max = 1,
                         targetEffect = stunTarget()
