@@ -7,6 +7,10 @@ require 'aggressiveai'
 
 
 --Aliases
+local debug_mode = false
+--
+--
+--
 local player1 = currentPid
 local player2 = oppPid
 local myDeck = loc(currentPid, deckPloc)
@@ -170,11 +174,12 @@ end
 function setupGame(g) 
     registerCards(g, {  
         -- Hall of Fame
-hero4_carddef(),
-hero5_carddef(),
-hero6_carddef(),
-hero7_carddef(),
-hero8_carddef()
+        hero4_carddef(),
+        hero5_carddef(),
+        hero6_carddef(),
+        hero7_carddef(),
+        hero8_carddef(),
+        toughness_token_carddef()
          })
     standardSetup(g, {
         description = "Echoes of Valor<br>The Realms Rising Commuity Event<br>Official Script<br>Special Thanks to Emil",
@@ -195,7 +200,11 @@ hero8_carddef()
                         chooseWho(),
                         drawCardsCountAtTurnEndDef(0),--- THIS
                         p1DrawBuffDef(),--- THIS
-                        p1SkillsBuffDef(),--- THIS                        
+                        p1SkillsBuffDef(),--- THIS
+                        replace_spring_blossom_buff(),
+                        replace_bard_dagger_buff(),
+                        replace_necromancer_dagger_buff(),
+                        end_of_turn_toughness_converter_buff(),                        
                         discardCardsAtTurnStartDef(),
                         fatigueCount(40, 1, "FatigueP1")
                     }
@@ -203,7 +212,7 @@ hero8_carddef()
             },
             {
                 id = plid2,
-                --isAi = true,
+                isAi = debug_mode,
                 startDraw = 0,
                 init = {
                     fromEnv = plid2
@@ -211,6 +220,10 @@ hero8_carddef()
                 cards = {
                     buffs = {
                         drawCardsCountAtTurnEndDef(5),
+                        --replace_spring_blossom_buff(),
+                        --replace_bard_dagger_buff(),
+                        --replace_necromancer_dagger_buff(),
+                        end_of_turn_toughness_converter_buff(),
                         discardCardsAtTurnStartDef(),
                         fatigueCount(40, 1, "FatigueP2")
                     }
@@ -221,102 +234,242 @@ hero8_carddef()
 end
 
 
---Card Overrides
+
+---EoV Hall of Fame Cards
+--=======================================================================================================
+function hero4_carddef()
+    return createChampionDef({
+        id = "hero4",
+        name = "Gremlin",
+        types = { wizardType, smallfolkType, noStealType },
+        acquireCost = 0,
+        health = 4,
+        isGuard = false,
+        abilities = {
+            createAbility({
+                id = "gremlin_auto",
+                trigger = onAcquireTrigger,
+                effect = sacrificeSelf()
+            })
+        },
+        layout = createLayout({
+            name = "Gremlin",
+            art = "avatars/smallfolk_wizard_male_02",
+            frame = "frames/coop_campaign_cardframe",
+            text = "CCAA\nWinner of season 4",
+            health = 4,
+            isGuard = false
+        })
+    })
+end
+
+function hero5_carddef()
+    return createChampionDef({
+        id = "hero5",
+        name = "Wujin",
+        types = { wizardType, halfDemonType, noStealType },
+        acquireCost = 0,
+        health = 5,
+        isGuard = false,
+        abilities = {
+            createAbility({
+                id = "wujin_auto",
+                trigger = onAcquireTrigger,
+                effect = sacrificeSelf()
+            })
+        },
+        layout = createLayout({
+            name = "Wujin",
+            art = "avatars/halfdemon_wizard_male_02",
+            frame = "frames/coop_campaign_cardframe",
+            text = "Eindeloos\nWinner of season 5",
+            health = 5,
+            isGuard = false
+        })
+    })
+end
+
+function hero6_carddef()
+    return createChampionDef({
+        id = "hero6",
+        name = "Al Potiono",
+        types = { alchemistType, humanType, noStealType },
+        acquireCost = 0,
+        health = 6,
+        isGuard = false,
+        abilities = {
+            createAbility({
+                id = "al_potiono_auto",
+                trigger = onAcquireTrigger,
+                effect = sacrificeSelf()
+            })
+        },
+        layout = createLayout({
+            name = "Al Potiono",
+            art = "avatars/Alchemist_01",
+            frame = "frames/coop_campaign_cardframe",
+            text = "Filtrophobe\nWinner of season 6",
+            health = 6,
+            isGuard = false
+        })
+    })
+end
+
+function hero7_carddef()
+    return createChampionDef({
+        id = "hero7",
+        name = "Pot of Greed",
+        types = { alchemistType, humanType, noStealType },
+        acquireCost = 0,
+        health = 7,
+        isGuard = false,
+        abilities = {
+            createAbility({
+                id = "pot_of_greed_auto",
+                trigger = onAcquireTrigger,
+                effect = sacrificeSelf()
+            })
+        },
+        layout = createLayout({
+            name = "Pot of Greed",
+            art = "avatars/elf_wizard_male_03",
+            frame = "frames/coop_campaign_cardframe",
+            text = "Filtrophobe\nWinner of season 7",
+            health = 7,
+            isGuard = false
+        })
+    })
+end
+
+
+function hero8_carddef()
+    return createChampionDef({
+        id = "hero8",
+        name = "HopPocket",
+        types = { wizardType, halfDemonType, noStealType },
+        acquireCost = 0,
+        health = 8,
+        isGuard = false,
+        abilities = {
+            createAbility({
+                id = "hoppocket_auto",
+                trigger = onAcquireTrigger,
+                effect = sacrificeSelf()
+            })
+        },
+        layout = createLayout({
+            name = "HopPocket",
+            art = "avatars/halfdemon_wizard_female_02",
+            frame = "frames/coop_campaign_cardframe",
+            text = "DaKatSesMeow\nWinner of season 8",
+            health = 8,
+            isGuard = false
+        })
+    })
+end
+
+
+---Card Overrides
 --=======================================================================================================
 --
 --Fighter
 --=======================================================================================================
 function fighter_rallying_flag_carddef()
-        local cardLayout = createLayout({
-            name = "Rallying Flag",
-            art = "art/t_fighter_rallying_flag",
-            frame = "frames/Warrior_CardFrame",
-            cardTypeLabel = "Champion",
-            isGuard = true,
-            health = 1,
-            types = { championType, humanType, fighterType },
-            xmlText = [[<vlayout>
-                            <box flexibleheight="1">
-                                <tmpro text="{gold_1}   {combat_1}" fontsize="60"/>
-                            </box>
-                        </vlayout>]]
-        })
-        return createChampionDef({
-            id = "fighter_rallying_flag",
-            name = "Rallying Flag",
-            acquireCost = 0,
-            health = 1,
-            isGuard = true,
-            layout = cardLayout,
-            types = { championType, humanType, fighterType },
-            factions = {},
-            abilities = {
-                createAbility({
-                    id = "fighter_rallying_flag",
-                    trigger = autoTrigger,
-                    activations = multipleActivations,
-                    cost = expendCost,
-                    effect = gainCombatEffect(1).seq(gainGoldEffect(1))
-                }),
-            }
-        })
-    end
-    --=========================================
-    function fighter_helm_of_fury_carddef()
-        local cardLayout = createLayout({
-            name = "Helm of Fury",
-            art = "art/t_fighter_helm_of_fury",
-            frame = "frames/Warrior_CardFrame",
-            cardTypeLabel = "Magical Armor",
-            xmlText =[[<vlayout>
-                            <hlayout flexibleheight="1">
-                                <box flexiblewidth="1">
-                                    <tmpro text="{requiresHealth_20}" fontsize="72"/>
-                                </box>
-                                <box flexiblewidth="7">
-                                    <tmpro text="If you have a guard in play,&lt;br&gt; gain {gold_1} {combat_1}" fontsize="32" />
-                                </box>
-                            </hlayout>
-                    </vlayout>
-                        ]]
-        })
-        local guardChamps = selectLoc(loc(currentPid, inPlayPloc)).where(isGuard()).count()
-        local disableHelm = disableTarget({ endOfTurnExpiry }).apply(selectLoc(loc(currentPid, skillsPloc)).where(isCardType(magicArmorType)))
-        --
-        return createMagicArmorDef({
-            id = "fighter_helm_of_fury",
-            name = "Helm of Fury",
-            types = {fighterType, magicArmorType, treasureType, headType},
-            layout = cardLayout,
-            layoutPath = "icons/fighter_helm_of_fury",
-            abilities = {
-                    createAbility({
-                        id = "helmGuard",
-                        trigger = autoTrigger,
-                        check = minHealthCurrent(20).And(guardChamps.gte(1)),
-                        effect = gainCombatEffect(1).seq(gainGoldEffect(1)).seq(disableHelm)
-                    }),
-                    createAbility({
-                        id = "helmLateGuard",
-                        trigger = onPlayTrigger,
-                        activations = singleActivation,
-                        check = minHealthCurrent(20),
-                        effect = ifElseEffect(guardChamps.gte(1),
-                                                gainCombatEffect(1).seq(gainGoldEffect(1)).seq(disableHelm),
-                                                nullEffect()) 
-                    }),
-                    createAbility({
-                        id = "helmHeal",
-                        trigger = gainedHealthTrigger,
-                        activations = singleActivation,
-                        check = minHealthCurrent(20),
-                        effect = ifElseEffect(guardChamps.gte(1),
-                                                gainCombatEffect(1).seq(gainGoldEffect(1)).seq(disableHelm),
-                                                nullEffect()) 
-                    }),
-            }        
-        })
+    local cardLayout = createLayout({
+        name = "Rallying Flag",
+        art = "art/t_fighter_rallying_flag",
+        frame = "frames/Warrior_CardFrame",
+        cardTypeLabel = "Champion",
+        isGuard = true,
+        health = 1,
+        types = { championType, humanType, fighterType },
+        xmlText = [[<vlayout>
+                        <box flexibleheight="1">
+                            <tmpro text="{gold_1}   {combat_1}" fontsize="60"/>
+                        </box>
+                    </vlayout>]]
+    })
+    return createChampionDef({
+        id = "fighter_rallying_flag",
+        name = "Rallying Flag",
+        acquireCost = 0,
+        health = 1,
+        isGuard = true,
+        layout = cardLayout,
+        types = { championType, humanType, fighterType },
+        factions = {},
+        abilities = {
+            createAbility({
+                id = "fighter_rallying_flag",
+                trigger = autoTrigger,
+                activations = multipleActivations,
+                cost = expendCost,
+                effect = gainCombatEffect(1).seq(gainGoldEffect(1))
+            }),
+        }
+    })
 end
+--=========================================
+function fighter_helm_of_fury_carddef()
+    local cardLayout = createLayout({
+        name = "Helm of Fury",
+        art = "art/t_fighter_helm_of_fury",
+        frame = "frames/Warrior_CardFrame",
+        cardTypeLabel = "Magical Armor",
+        xmlText =[[<vlayout>
+                        <hlayout flexibleheight="1">
+                            <box flexiblewidth="1">
+                                <tmpro text="{requiresHealth_20}" fontsize="72"/>
+                            </box>
+                            <box flexiblewidth="7">
+                                <tmpro text="If you have a guard in play,&lt;br&gt; gain {gold_1} {combat_1}" fontsize="32" />
+                            </box>
+                        </hlayout>
+                </vlayout>
+                    ]]
+    })
+    local guardChamps = selectLoc(loc(currentPid, inPlayPloc)).where(isGuard()).count()
+    local disableHelm = disableTarget({ endOfTurnExpiry }).apply(selectLoc(loc(currentPid, skillsPloc)).where(isCardType(magicArmorType)))
+    --local disableHelm = nullEffect()
+    --
+    return createMagicArmorDef({
+        id = "fighter_helm_of_fury",
+        name = "Helm of Fury",
+        types = {fighterType, magicArmorType, treasureType, headType},
+        layout = cardLayout,
+        layoutPath = "icons/fighter_helm_of_fury",
+        abilities = {
+                createAbility({
+                    id = "helmGuard",
+                    trigger = autoTrigger,
+                    check = minHealthCurrent(20).And(guardChamps.gte(1)),
+                    effect = gainCombatEffect(1).seq(gainGoldEffect(1)).seq(disableHelm)
+                }),
+                createAbility({
+                    id = "helmLateGuard",
+                    trigger = onPlayTrigger,
+                    activations = singleActivation,
+                    check = minHealthCurrent(20),
+                    effect = ifElseEffect(guardChamps.gte(1),
+                                            gainCombatEffect(1).seq(gainGoldEffect(1)).seq(disableHelm),
+                                            nullEffect()) 
+                }),
+                createAbility({
+                    id = "helmHeal",
+                    trigger = gainedHealthTrigger,
+                    activations = singleActivation,
+                    check = minHealthCurrent(20),
+                    effect = ifElseEffect(guardChamps.gte(1),
+                                            gainCombatEffect(1).seq(gainGoldEffect(1)).seq(disableHelm),
+                                            nullEffect()) 
+                })
+        }        
+    })
+end
+
+--Wizard
+--=======================================================================================================
+--KUPO
 
 --Ranger
 --=======================================================================================================
@@ -370,6 +523,416 @@ function ranger_honed_black_arrow_carddef()
 						where(isCardType(bowType)).count().gte(1), toIntExpression(300), toIntExpression(-1))
 				})
                 },
+    })
+end
+
+
+function ranger_snapshot_carddef()
+    local cardLayout = createLayout({
+        name = "Snapshot",
+        art = "art/t_snapshot",
+        frame = "frames/Ranger_armor_frame",
+        cardTypeLabel = "Ability",
+        xmlText = [[<vlayout>
+                    <hlayout flexibleheight="7.7">
+                            <tmpro text="{scrap}" fontsize="40"      flexiblewidth="1.5"/>
+                            <vlayout flexiblewidth="8">
+                                <tmpro text="You may stun a target champion. &lt;br&gt;You may put up to two arrows/bows from your discard pile into your hand. &lt;br&gt;Draw 1. &lt;size=90%&gt;&lt;/size&gt;" fontsize="18" alignment="Left" flexibleheight="1"/>>
+                            </vlayout>
+                    </hlayout>
+                </vlayout>]]
+                    })
+
+    return createHeroAbilityDef({
+        id = "ranger_snapshot",
+        name = "Snapshot",
+        cardTypeLabel = "Ability",
+        playLocation = skillsPloc,
+        types = { rangerType, abilityType},
+        tags = { rangerGalleryCardTag },
+        layout = cardLayout,
+        layoutPath = "icons/ranger_snapshot",
+        abilities = {
+            createAbility({
+                id = "ranger_snapshot_abbility",
+                effect = pushTargetedEffect({
+						desc = "Stun target champion",
+						min = 0,
+						max = 1,
+						validTargets = selectLoc(loc(oppPid, inPlayPloc)).where(isCardStunnable()),
+						targetEffect = stunTarget().seq(drawCardsEffect(1))
+                                        .seq(pushTargetedEffect({
+                                                desc = "Choose up to two arrows/bows from your discard pile to put into your hand.",
+                                                min = 0,
+                                                max = 2,
+                                                validTargets = selectLoc(loc(currentPid, discardPloc)).where(isCardType(arrowType).Or(isCardType(bowType))),
+                                                targetEffect = moveTarget(currentHandLoc),
+                                            })),
+					}),
+                cost = sacrificeSelfCost,
+                trigger = uiTrigger,
+                promptType = showPrompt,
+                layout = cardLayout,
+            })
+        }
+        })
+    end
+
+function ranger_twin_shot_carddef()
+	local cardLayout = createLayout({
+		name = "Twin Shot",
+		art = "art/t_ranger_twin_shot",
+		frame = "frames/ranger_cardframe",
+        xmlText = [[
+                    <vlayout>
+                    <hlayout>
+                    <tmpro text="&lt;space=-0.3em&gt;{scrap}" flexibleheight="1" flexiblewidth="1" fontsize="55"/>
+                    <vlayout>
+                    <tmpro text="Deal 3 damage to opponent or stun a champion, ignoring guards. If you stun a champion this way, draw 1. Do this twice." flexibleheight="10" flexiblewidth="5" fontsize="21"/>
+                    </vlayout>
+                    </hlayout>
+                    </vlayout>
+                ]]
+	})
+    local champion = createLayout({
+		name = "Twin Shot",
+		art = "art/t_ranger_twin_shot",
+		frame = "frames/ranger_cardframe",
+        xmlText = [[
+                    <vlayout>
+                    <tmpro text="Stun target champion." flexibleheight="1" flexiblewidth="1" fontsize="32"/>
+                    </vlayout>
+                ]]
+	})
+    local opponent = createLayout({
+		name = "Twin Shot",
+		art = "art/t_ranger_twin_shot",
+		frame = "frames/ranger_cardframe",
+        xmlText = [[
+                    <vlayout>
+                <tmpro text="Deal 3 damage
+                to opponent." flexibleheight="1" flexiblewidth="1" fontsize="32"/>
+                </vlayout>
+                ]]
+	})
+    local function makeShotEffect()
+    return ifElseEffect(
+        selectLoc(loc(oppPid, inPlayPloc)).count().eq(0),
+        hitOpponentEffect(3),
+        pushChoiceEffect({
+            choices = {
+                {
+                    layout = champion,
+                    effect = pushTargetedEffect({
+                        desc = "Stun target champion.",
+                        validTargets = selectLoc(loc(oppPid, inPlayPloc)),
+                        min = 1,
+                        max = 1,
+                        targetEffect = stunTarget()
+                            .seq(ignoreTarget(drawCardsWithAnimation(1)))
+                    })
+                },
+                {
+                    layout = opponent,
+                    effect = hitOpponentEffect(3)
+                }
+            }
+        })
+    )
+    end
+	return createHeroAbilityDef({
+		id = "ranger_twin_shot",
+		name = "Twin Shot",
+        cardTypeLabel = "Ability",
+        playLocation = skillsPloc,
+		types = { abilityType },
+		layout = cardLayout,
+		abilities = {
+			createAbility({
+				id = "main",
+				trigger = uiTrigger,
+                promptType = showPrompt,
+                layout = cardLayout,
+                cost = sacrificeSelfCost,
+                effect = makeShotEffect()
+                    .seq(appendEffect(makeShotEffect()))
+			})
+        }
+	})
+end
+
+function ranger_triple_shot_carddef()
+	local cardLayout = createLayout({
+		name = "Triple Shot",
+		art = "art/t_triple_shot",
+		frame = "frames/ranger_cardframe",
+        xmlText = [[
+                    <vlayout>
+                    <hlayout>
+                    <tmpro text="&lt;space=-0.3em&gt;{scrap}" flexibleheight="1" flexiblewidth="1" fontsize="55"/>
+                    <vlayout>
+                    <tmpro text="Deal 3 damage to opponent or stun a champion, ignoring guards. If you stun a champion this way, draw 1. Do this thrice." flexibleheight="10" flexiblewidth="5" fontsize="21"/>
+                    </vlayout>
+                    </hlayout>
+                    </vlayout>
+                ]]
+	})
+    local champion = createLayout({
+		name = "Triple Shot",
+		art = "art/t_triple_shot",
+		frame = "frames/ranger_cardframe",
+        xmlText = [[
+                    <vlayout>
+                <tmpro text="Stun target champion." flexibleheight="1" flexiblewidth="1" fontsize="32"/>
+                </vlayout>
+                ]]
+	})
+    local opponent = createLayout({
+		name = "Triple Shot",
+		art = "art/t_triple_shot",
+		frame = "frames/ranger_cardframe",
+        xmlText = [[
+                    <vlayout>
+                <tmpro text="Deal 3 damage
+                to opponent." flexibleheight="1" flexiblewidth="1" fontsize="32"/>
+                </vlayout>
+                ]]
+	})
+    local function makeShotEffect()
+    return ifElseEffect(
+        selectLoc(loc(oppPid, inPlayPloc)).count().eq(0),
+        hitOpponentEffect(3),
+        pushChoiceEffect({
+            choices = {
+                {
+                    layout = champion,
+                    effect = pushTargetedEffect({
+                        desc = "Stun target champion.",
+                        validTargets = selectLoc(loc(oppPid, inPlayPloc)),
+                        min = 1,
+                        max = 1,
+                        targetEffect = stunTarget()
+                            .seq(ignoreTarget(drawCardsWithAnimation(1)))
+                    })
+                },
+                {
+                    layout = opponent,
+                    effect = hitOpponentEffect(3)
+                }
+            }
+        })
+    )
+    end
+	return createHeroAbilityDef({
+		id = "ranger_triple_shot",
+		name = "Triple Shot",
+        cardTypeLabel = "Ability",
+        playLocation = skillsPloc,
+		types = { abilityType },
+		layout = cardLayout,
+		abilities = {
+			createAbility({
+				id = "main",
+				trigger = uiTrigger,
+                promptType = showPrompt,
+                layout = cardLayout,
+                cost = sacrificeSelfCost,
+                effect = makeShotEffect()
+    .seq(appendEffect(makeShotEffect()))
+    .seq(appendEffect(makeShotEffect()))
+			})
+        }
+	})
+end
+
+--Bard
+--=======================================================================================================
+
+-- Bard collecting cap is a 20 Health Threshold magic armor. 
+-- Activate: +1 gold OR +3 healing if you have a song in play.
+function bard_collecting_cap_carddef()
+    local cardLayout = createLayout({
+        name = "Collecting Cap",
+        art = "art/classes/bard/bard_collecting_cap",
+        frame = "frames/bard_frames/bard_treasure_cardframe",
+        cardTypeLabel = "Magical Armor",
+        xmlText = [[<vlayout spacing="1" forcewidth="true">
+                        <hlayout spacing="1" forcewidth="true">
+                            <icon text="{requiresHealth_20}" fontsize="90"/>    
+                            <text text="If you have 
+                    a song in play 
+                    gain {gold_1} or {health_3}." fontsize="30"/>
+                                            </hlayout>
+                                        </vlayout>]]
+    })
+
+    return createMagicArmorDef({
+        id = "bard_collecting_cap",
+        name = "Collecting Cap",
+        types = { bardType, magicArmorType, treasureType, headType },
+        layout = cardLayout,
+        layoutPath = "icons/bard/bard_collecting_cap",
+        abilities = {
+            createAbility({
+                id = "bard_collecting_cap_activate",
+                trigger = uiTrigger,
+                cost = expendCost,
+                check = getPlayerHealth(currentPid).gte(20).And(selectLoc(currentInPlayLoc).union(selectLoc(currentCastLoc)).where(isCardType(songType)).count().gte(1)),
+                effect = pushChoiceEffect({
+                    choices = {
+                        {
+                            effect = gainGoldEffect(1),
+                            layout = createLayout({
+                                name = "Gain 1 Gold",
+                                art = "art/classes/bard/bard_collecting_cap",
+                                xmlText = [[<icon text="{gold_1}" fontsize="60"/>]]
+                            }),
+                        },
+                        {
+                            condition = getPlayerHealth(currentPid).eq(getPlayerMaxHealth(currentPid)).invert(),
+                            effect = healPlayerEffect(currentPid, 3),
+                            layout = createLayout({
+                                name = "Gain 3 Health",
+                                art = "art/classes/bard/bard_collecting_cap",
+                                xmlText = [[<icon text="{health_3}" fontsize="60"/>]]
+                            }),
+                        }
+                    }
+                })
+            })
+        }
+    })
+end
+--===============================================
+-- Bard dancing blade is a non guard with 1 defence.  It grants 2 damage and 1 gold and has auto trigger.
+function bard_dancing_blade_carddef()
+    local cardLayout = createLayout({
+        name = "Dancing Blade",
+        art = "art/classes/bard/bard_dancing_blade",
+        frame = "frames/bard_frames/bard_champion_cardframe",
+        cardTypeLabel = "Champion",
+        xmlText = [[<hlayout forceheight="true" spacing="30">
+                        <icon text="{expend}" fontsize="50"/>
+                        <icon text="{combat_2}{gold_1}" fontsize="70"/>
+                        <spacer /> <spacer />
+                    </hlayout>]],
+        isGuard = false,
+        types = { championType, noStealType, bardType},
+        health = 1,
+    })
+
+    return createChampionDef({
+        id = "bard_dancing_blade",
+        name = "Dancing Blade",
+        acquireCost = 0,
+        health = 1,
+        isGuard = false,
+        layout = cardLayout,
+        factions = {},
+        types = { championType, noStealType, bardType},
+        layoutPath = "icons/bard/bard_dancing_blade",
+        abilities = {
+            createAbility({
+                id = "bard_dancing_blade_ability",
+                effect = gainCombatEffect(2).seq(gainGoldEffect(1)),
+                cost = expendCost,
+                trigger = autoTrigger,
+                tags = { gainCombatTag, aiPlayAllTag }
+            })
+        }
+    })
+end
+
+-- Bard necros dirge is a necros faction card that grants 2 combat and 
+-- the next time you acquire a necros champion this turn you may sacrifice
+-- a card in your hand or discard pile.
+function bard_necros_dirge_carddef()
+    local cardLayout = createLayout({
+        name = "Necros Dirge",
+        art = "art/classes/bard/bard_necros_dirge",
+        frame = "frames/bard_frames/bard_action_cardframe",
+        cardTypeLabel = "Action",
+        xmlText = [[<vlayout forceheight="false" spacing="6">
+                        <hlayout spacing="10">
+                        <icon text="{combat_2}" fontsize="50"/>
+                        </hlayout>    
+                        <hlayout forcewidth="true" spacing="10">
+                            <vlayout  forceheight="false">
+                                <text text="The next time you acquire a {necro} champion this turn you may sacrifice a card in your hand or discard pile." fontsize="20"/>
+                            </vlayout>
+                        </hlayout>
+                    </vlayout>]],
+    })
+    local sacrificeTrigger = "necros_dirge_sacrifice_trigger"
+    return createActionDef({
+        id = "bard_necros_dirge",
+        name = "Necros Dirge",
+        acquireCost = 0,
+        layout = cardLayout,
+        factions = {necrosFaction},
+        types = { actionType, bardType, songType},
+        layoutPath = "icons/bard/bard_necros_dirge",
+        abilities = {
+            createAbility({
+                id = "bard_necros_dirge_ability",
+                effect = gainCombatEffect(2),
+                trigger = autoTrigger,
+                activations = singleActivation,
+                tags = { gainCombatTag, aiPlayAllTag }
+            }),
+            createAbility({
+                id = "bard_necros_dirge_sacrifice_ability",
+                effect = pushTargetedEffect({
+                            desc="Necros Dirge: sacrifice a card from hand or discard.",
+                            min=0,
+                            max=1,
+                            validTargets = selectLoc(currentHandLoc).union(selectLoc(currentDiscardLoc)),
+                            targetEffect = sacrificeTarget(),      
+                        }),
+                trigger = abilityTrigger(sacrificeTrigger),
+                activations = singleActivation,
+            })
+        },
+        cardEffectAbilities = {
+            createCardEffectAbility({
+                trigger = acquiredCardTrigger,
+                effect = ifEffect(
+                    selectTargets().where(isCardChampion().And(isCardFaction(necrosFaction))).count().gte(1),
+                    fireAbilityTriggerEffect(sacrificeTrigger)
+                ),
+                activations = multipleActivations,
+            })
+        }
+    })
+end
+
+function replace_bard_dagger_buff()
+    local dagger_selector = function(player_id) 
+        return selectLoc(loc(player_id, handPloc)).union(selectLoc(loc(player_id, deckPloc)))
+            .where(isCardName("dagger")) 
+    end
+    local player_has_necros_dirge = function(player_id) 
+        return selectLoc(loc(player_id, handPloc)).union(selectLoc(loc(player_id, deckPloc)))
+            .where(isCardName("bard_necros_dirge")).count().gte(1) 
+    end
+    local ef = ifEffect(player_has_necros_dirge(currentPid),
+            randomTarget(const(1), transformTarget("gold"))
+                .apply(dagger_selector(currentPid)))
+        .seq(ifEffect(player_has_necros_dirge(oppPid),
+            randomTarget(const(1), transformTarget("gold"))
+                .apply(dagger_selector(oppPid))))
+        .seq(sacrificeSelf())
+
+    return createGlobalBuff({
+        id = "replace_bard_dagger",
+        name = "Bard Dagger Replacer",
+        abilities = {
+            createAbility({
+                id = "replace_bard_dagger_ability",
+                trigger = startOfGameTrigger,
+                effect = ef
+            })
+        }
     })
 end
 
@@ -515,11 +1078,11 @@ function cleric_shining_breastplate_carddef()
         xmlText =[[<hlayout spacing="1" forcewidth="true">
                     <icon text="{requiresHealth_25}" fontsize="90"/>    
                     <text text="If you are at full health or have +{health} this turn,
-                put a champion without a cost from your discard into play." fontsize="18"/>
+                put a champion without a cost (3 {shield} max) from your discard into play." fontsize="18"/>
                     <text text=" " fontsize="80"/>
                 </hlayout>]]
     })
-	local noCostChamps = selectLoc(loc(currentPid, discardPloc)).where(isCardChampion().And(getCardCost().eq(0)))
+	local noCostChamps = selectLoc(loc(currentPid, discardPloc)).where(isCardChampion().And(getCardCost().eq(0)).And(getCardHealth().lte(3)))
     local gainedHealthKey = "gainedHealthThisTurn"
     local gainedHealthSlot = createPlayerSlot({ key = gainedHealthKey, expiry = { endOfTurnExpiry } })
     return createMagicArmorDef({
@@ -547,7 +1110,7 @@ function cleric_shining_breastplate_carddef()
                 cost = expendCost,
                 check = getPlayerHealth(currentPid).eq(getPlayerMaxHealth(currentPid))
                             .Or(hasPlayerSlot(currentPlayer(), gainedHealthKey))
-                            .And(noCostChamps.count().gte(1))
+                            .And(noCostChamps.where(getCardHealth().lte(3)).count().gte(1))
                             .And(getPlayerHealth(currentPid).gte(25)),
                 tags = { gainCombatTag }
             }),
@@ -565,8 +1128,213 @@ function cleric_shining_breastplate_carddef()
     })
 end
 
+--=========================================
+function cleric_everburning_candle_carddef()
+    local cardLayout = createLayout({
+        name = "Everburning Candle",
+        art = "art/t_cleric_everburning_candle",
+        frame = "frames/Cleric_CardFrame",
+        cardTypeLabel = "Item",
+        xmlText =[[<vlayout>
+                        <box flexibleheight="1">
+                            <tmpro text="{gold_1}  {health_3}" fontsize="48"/>
+                        </box>
+                        <box flexibleheight="1">
+                                    <tmpro text="or" fontsize="26"/>>
+                        </box>
+                        <box flexibleheight="1">
+                            <tmpro text="Put a champion without a cost (3 {shield} max) from your discard into your hand." fontsize="14" />
+                        </box>
+                    </vlayout>]]
+    })
+    local cardLayoutHeal = createLayout({
+        name = "Everburning Candle",
+        art = "art/t_cleric_everburning_candle",
+        frame = "frames/Cleric_CardFrame",
+        cardTypeLabel = "Item",
+        xmlText =[[<vlayout>
+                    <hlayout flexibleheight="3">
+                            <tmpro text="{gold_1}   {health_3}" fontsize="60" flexiblewidth="1" />
+                    </hlayout>
+                </vlayout>]]
+    })
+    local cardLayoutChamp = createLayout({
+        name = "Everburning Candle",
+        art = "art/t_cleric_everburning_candle",
+        frame = "frames/Cleric_CardFrame",
+        cardTypeLabel = "Item",
+        xmlText =[[<vlayout>
+                    <hlayout flexibleheight="3">
+                            <tmpro text="Put a champion without a cost (3 {shield} max) from your discard into your hand." fontsize="25" flexiblewidth="1" />
+                    </hlayout>
+                </vlayout>]]
+    })
+   local noCostChamps = selectLoc(loc(currentPid, discardPloc)).where(isCardChampion().And(getCardCost().eq(0)).And(getCardHealth().lte(3)))
+    --
+    return createItemDef({
+        id = "cleric_everburning_candle",
+        name = "Everburning Candle",
+        acquireCost = 0,
+        cardTypeLabel = "Item",
+        types = { itemType, noStealType, clericType},
+        factions = {},
+        layout = cardLayout,
+        playLocation = castPloc,
+            abilities = {
+                    createAbility({
+                        id = "brightMain",
+                        trigger = autoTrigger,
+                        playAllType = blockPlayType,
+                        effect = pushChoiceEffect({
+                                choices={
+                                    {
+                                        effect = healPlayerEffect(currentPid, 3).seq(gainGoldEffect(1)),
+                                        layout = cardLayoutHeal,                     
+                                    },
+                                    {
+                                        effect = pushTargetedEffect({
+                                                        desc="Put a champion without a cost (3 {shield} max) from your discard into your hand.",
+                                                        min=0,
+                                                        max=1,
+                                                        validTargets = noCostChamps,
+                                                        targetEffect = moveTarget(loc(currentPid, handPloc)),
+                                                        tags = {toughestTag}      
+                                                    }),
+                                        layout = cardLayoutChamp,
+                                    }
+                                }
+                            })
+                    }),
+                },
+    })
+end
+
+function cleric_imperial_sailor_carddef()
+    local cardLayout = createLayout({
+        name = "Imperial Sailor",
+        art = "art/treasures/t_imperial_sailor",
+        frame = "frames/Cleric_CardFrame",
+        cardTypeLabel = "Champion",
+        isGuard = false,
+        health = 3,
+        types = { championType, noStealType, humanType, clericType},
+        xmlText = [[<vlayout>
+                        <hlayout flexibleheight="1.8">
+                            <box flexiblewidth="1">
+                                <tmpro text="{expend}" fontsize="42"/>
+                            </box>
+                            <vlayout flexiblewidth="7">
+                                <box flexibleheight="1">
+                                    <tmpro text="Reserve 1" fontsize="18" />
+                                </box>
+                                <box flexibleheight="2">
+                                    <tmpro text="{gold_1} {combat_2}" fontsize="42" />
+                                </box>
+                            </vlayout>
+                        </hlayout>
+                        <divider/>
+                        <hlayout flexibleheight="1">
+                            <box flexiblewidth="1">
+                                <tmpro text="{scrap}" fontsize="42"/>
+                            </box>
+                            <box flexiblewidth="7">
+                                <tmpro text="Sacrifice any number of cards in the market. Draw 1." fontsize="18" />
+                            </box>>
+                        </hlayout>
+                    </vlayout>
+                    ]]
+    })
+    return createChampionDef({
+        id = "cleric_imperial_sailor",
+        name = "Imperial Sailor",
+        acquireCost = 0,
+        health = 3,
+        isGuard = false,
+        layout = cardLayout,
+        factions = {},
+        types = { championType, noStealType, humanType, clericType},
+        abilities = {
+            createAbility({
+                id = "cleric_imperial_sailor",
+                trigger = autoTrigger,
+                activations = multipleActivations,
+                cost = expendCost,
+                effect = gainGoldEffect(1).seq(gainCombatEffect(2))
+            }),
+             createAbility({
+                id = "cleric_imperial_sailor_srap",
+                trigger = uiTrigger,
+                activations = singleActivations,
+                cost = sacrificeSelfCost,
+                effect = targetedEffect({
+                    desc = "Sacrifice any number of cards in the market. Draw 1.",
+                    min = 0,
+                    max = 5,
+                    validTargets = selectLoc(centerRowLoc),
+                    targetEffect = sacrificeTarget().seq(drawCardsEffect(1)),
+                })
+            }),
+        }
+    })
+end
+
 --Thief
 --=======================================================================================================
+-- Blinding powders grants 3 gold, lets you return target champion to the bottom of its owners deck.
+-- It has a self sacrifice ability to cause the opponent to discard a card.  It is a reserve 2 card.
+function thief_blinding_powder_carddef()
+    local cardLayout = createLayout({
+        name = "Blinding Powder",
+        art = "art/treasures/thief_blinding_powder",
+        frame = "frames/Thief_CardFrame",
+        xmlText = [[
+                    <vlayout forceheight="false" spacing="5">
+                        <vlayout forceheight="false" spacing = "0">
+                            <text text="Reserve 2" fontsize="16" fontstyle="italic"/>
+                            <icon text="{gold_3}" fontsize="40"/>
+                            <text text="You may return target champion to the bottom of its owner's deck" fontsize="20"/> 
+                        </vlayout>
+                    </vlayout>
+                    ]]
+    })
+
+    local return_to_deck_trigger = "return_to_deck_trigger"
+    local return_to_deck_ability = createAbility({
+        id = "return_to_deck_ability",
+        trigger = abilityTrigger(return_to_deck_trigger),
+        effect = moveToBottomDeckTarget(true, 0).apply(selectSource())
+    })
+    local return_to_deck_slot = createAbilitySlot({
+        ability = return_to_deck_ability,
+        expiry = { neverExpiry }
+    })
+
+    return createItemDef({
+        id = "thief_blinding_powder",
+        name = "Blinding Powder",
+        acquireCost = 0,
+        cardTypeLabel = "Item",
+        types = { itemType, noStealType, thiefType, reserveType},
+        factions = {},
+        layout = cardLayout,
+        playLocation = castPloc,
+        abilities = {
+            createAbility({
+                id = "thief_blinding_powder_onplay",
+                trigger = autoTrigger,
+                activations = singleActivation,
+                effect = gainGoldEffect(3).seq(pushTargetedEffect({
+                    desc = "Return target champion to the bottom of its owner's deck.",
+                    min = 0,
+                    max = 1,
+                    validTargets = selectLoc(loc(currentPid, inPlayPloc)).union(selectLoc(loc(oppPid, inPlayPloc))).where(isCardChampion()),
+                    targetEffect = addSlotToTarget(return_to_deck_slot).seq(fireAbilityTriggerForTarget(return_to_deck_trigger)),
+                }))
+            }),
+        }
+    })
+end
+
 function thief_silent_boots_carddef()
     --
     local cardLayout = createLayout({
@@ -671,7 +1439,7 @@ function thief_enchanted_garrote_carddef()
                     </hlayout>
                 </vlayout>]]
     })
-    --Discard for champions, Sacrificed for tokens
+    --Discard for chapions, Sacrificed for tokens
     local stunnedChamps = selectLoc(loc(oppPid, discardPloc)).union(selectLoc(loc(oppPid, sacrificePloc))).where(isCardStunned()).count()
     --
     return createItemDef({
@@ -708,155 +1476,350 @@ function thief_enchanted_garrote_carddef()
     })
 end
 
-
-function hero4_carddef()
-    return createChampionDef({
-        id = "hero4",
-        name = "Gremlin",
-        types = { wizardType, smallfolkType, noStealType },
+function draw_a_card_ability()
+    return createAbility({
+        id = "draw_a_card",
+        trigger = autoTrigger,
+        effect = drawCardsEffect(1)
+    })
+end
+--Monk
+--=========================================
+function monk_horn_of_ascendance_carddef()
+    -- This card draws 1 and grants 2 gold after your next acquisition.
+    local cardLayout = createLayout({
+        name = "Horn of Ascendance",
+        art = "art/classes/monk/monk_horn_of_ascendance",
+        frame = "frames/monk_frames/monk_item_cardframe",
+        cardTypeLabel = "Item",
+        xmlText =[[<vlayout>
+                    <text text="Reserve 1" fontsize="22" fontstyle="italic"/>
+                    <text text="Draw 1.
+                    The next time you acquire a card this turn, gain 2 {gold}." fontsize="27"/>                           
+                </vlayout>]]
+    })
+    return createItemDef({
+        id = "monk_horn_of_ascendance",
+        name = "Horn of Ascendance",
         acquireCost = 0,
-        health = 4,
-        isGuard = false,
+        types = { itemType, noStealType, monkType, hornType,reserveType },
+        factions = {},
+        playLocation = castPloc,
+        layout = cardLayout,
         abilities = {
+            draw_a_card_ability(),
             createAbility({
-                id = "gremlin_auto",
-                trigger = onAcquireTrigger,
-                effect = sacrificeSelf()
+                id = "monk_horn_of_ascendance_ability",
+                trigger = onAcquireGlobalTrigger,
+                activations = singleActivation,
+                cost = noCost,
+                effect = gainGoldEffect(2)
             })
-        },
-        layout = createLayout({
-            name = "Gremlin",
-            art = "avatars/smallfolk_wizard_male_02",
-            frame = "frames/coop_campaign_cardframe",
-            text = "CCAA\nWinner of season 4",
-            health = 4,
-            isGuard = false
-        })
+        }
     })
 end
 
-function hero5_carddef()
-    return createChampionDef({
-        id = "hero5",
-        name = "Wujin",
-        types = { wizardType, halfDemonType, noStealType },
+--=======================================
+function monk_wraps_of_strength_carddef()
+    local card_name = "monk_wraps_of_strength"
+	local cardLayout = createLayout({
+        name = "Wraps of Strength",
+        art = "art/classes/monk/monk_wraps_of_strength",
+        frame = "frames/monk_frames/monk_treasure_cardframe",
+        cardTypeLabel = "Magic Armor",
+        xmlText =[[<hlayout spacing="10" forcewidth="true">
+                    <icon text="{requiresHealth_25}" fontsize="90"/>    <vlayout spacing="1">
+                    <text text="
+                    If you have 4 
+                    Tao Lu 
+                    actions in play," fontsize="24"/>
+                                        <text text="{combat_2} {health_2}" fontsize="40"/>
+                                        </vlayout>
+                                    </hlayout>]]
+    })
+    return createMagicArmorDef({
+        id = card_name,
+        name = "Wraps of Strength",
         acquireCost = 0,
-        health = 5,
-        isGuard = false,
+        types = { monkType, magicArmorType, treasureType },
+        level = 9,
         abilities = {
             createAbility({
-                id = "wujin_auto",
-                trigger = onAcquireTrigger,
-                effect = sacrificeSelf()
+                id = "monk_wraps_of_strength_ability",
+                trigger = autoTrigger,
+                check = getPlayerHealth(currentPid).gte(25).And(getCustomValue(currentPid).gte(4)),
+                effect = gainCombatEffect(2).seq(gainHealthEffect(2))
             })
         },
-        layout = createLayout({
-            name = "Wujin",
-            art = "avatars/halfdemon_wizard_male_02",
-            frame = "frames/coop_campaign_cardframe",
-            text = "Eindeloos\nWinner of season 5",
-            health = 5,
-            isGuard = false
-        })
+        layoutPath = "icons/monk/monk_wraps_of_strength",
+        layout = cardLayout
     })
 end
 
-function hero6_carddef()
-    return createChampionDef({
-        id = "hero6",
-        name = "Al Potiono",
-        types = { alchemistType, humanType, noStealType },
-        acquireCost = 0,
-        health = 6,
-        isGuard = false,
+--=======================================
+function monk_cobra_fang_carddef()
+    local card_name = "monk_cobra_fang"
+    local cardLayout = createLayout({
+        name = "Cobra Fang",
+        art = "art/classes/monk/monk_cobra_fang",
+        frame = "frames/monk_frames/monk_action_cardframe",
+        xmlText = [[
+            <vlayout>
+            <tmpro text="This card counts as
+            2 Tao Lu actions." fontsize="26" flexibleheight="1" flexiblewidth="1" />
+            <tmpro text="Gain 1{combat} for each Tao Lu action you have in play." fontsize="24" flexibleheight="1" flexiblewidth="1" />
+            </vlayout>
+                    ]]
+    })
+    local selector = selectLoc(currentCastLoc).exclude(selectSource()).where(isCardType(taoLuType).And(isCardAction()))
+    local buff = createGlobalBuff({
+        id = card_name .. "_buff",
+        name = "Cobra Fang",
+        abilities = {
+            sacrificeSelfOnTurnEndAbility(card_name .. "_buff_self_sacrifice")
+        },
+        cardEffectAbilities = {
+            createCardEffectAbility({
+                id = card_name .. "_card_effect_ability",
+                trigger = locationChangedCardTrigger,
+                effect = filterTargets(selector, ignoreTarget(gainCombatEffect(1)))
+            })
+        }
+    })
+    return createActionDef({
+        id = card_name,
+        name = "Cobra Fang",
+        types = { monkType, taoLuType },
+        tags = { monkGalleryCardTag },
         abilities = {
             createAbility({
-                id = "al_potiono_auto",
-                trigger = onAcquireTrigger,
-                effect = sacrificeSelf()
+                id = card_name .. "_ability",
+                trigger = onPlayTrigger,
+                cost = noCost,
+                effect = gainCombatEffect(getCustomValue(ownerPid))
+                        .seq(gainCustomValueEffect(2))
+                        .seq(createCardEffect(buff, currentBuffsLoc))
+						--firing the ability here gives 1 gold/health if other "winds" are in play already.
+                        .seq(fireAbilityTriggerEffect("monkTaoLuSkillUsedTrigger")),
+                playAllType = playFirstPlayType,
+                tags = { gainCombatTag }
+            }),
+            createAbility({
+                id = card_name .. "_ability_trigger",
+                trigger = abilityTrigger(monkTaoLuSkillUsedTrigger),
+                cost = noCost,
+                activations = multipleActivations,
+                effect = gainCombatEffect(1),
+                tags = { gainHealthTag }
             })
         },
-        layout = createLayout({
-            name = "Al Potiono",
-            art = "avatars/Alchemist_01",
-            frame = "frames/coop_campaign_cardframe",
-            text = "Filtrophobe\nWinner of season 6",
-            health = 6,
-            isGuard = false
-        })
+        layout = cardLayout
     })
 end
 
-function hero7_carddef()
-    return createChampionDef({
-        id = "hero7",
-        name = "Pot of Greed",
-        types = { alchemistType, humanType, noStealType },
-        acquireCost = 0,
-        health = 7,
-        isGuard = false,
+--====================================
+function replace_spring_blossom_buff()
+    local spring_blossom_selector = function(player_id) 
+        return selectLoc(loc(player_id, handPloc)).union(selectLoc(loc(player_id, deckPloc)))
+            .where(isCardName("monk_spring_blossom")) 
+    end
+    local ef = ifEffect(spring_blossom_selector(currentPid).count().gte(6),
+            randomTarget(const(1), transformTarget("monk_resplendent_blossom"))
+                .apply(spring_blossom_selector(currentPid)))
+        .seq(ifEffect(spring_blossom_selector(oppPid).count().gte(6),
+            randomTarget(const(1), transformTarget("monk_resplendent_blossom"))
+                .apply(spring_blossom_selector(oppPid))))
+        .seq(sacrificeSelf())
+
+    return createGlobalBuff({
+        id = "fix_monk_gold_upgrade",
+        name = "Monk Gold Upgrade Fixer",
         abilities = {
             createAbility({
-                id = "pot_of_greed_auto",
-                trigger = onAcquireTrigger,
-                effect = sacrificeSelf()
+                id = "fix_monk_gold_upgrade_ability",
+                trigger = startOfGameTrigger,
+                effect = ef
             })
-        },
-        layout = createLayout({
-            name = "Pot of Greed",
-            art = "avatars/elf_wizard_male_03",
-            frame = "frames/coop_campaign_cardframe",
-            text = "Filtrophobe\nWinner of season 7",
-            health = 7,
-            isGuard = false
-        })
+        }
+    })
+end
+--Druid
+--=========================================
+function druid_grass_weave_sash_carddef()
+    local cardLayout = createLayout({
+        name = "Grass-Weave Sash",
+        art = "art/classes/druid/grass_weave_sash",
+        frame = "frames/druid_frames/druid_treasure_cardframe",
+        cardTypeLabel = "Magical Armor",
+        xmlText = [[
+                                <vlayout>
+            <hlayout>
+            <tmpro text="{requiresHealth_10}" flexiblewidth="1" flexibleheight="1" fontsize="70"/>
+            <vlayout>
+            <tmpro text="Gain 2 Toughness." flexiblewidth="7" flexibleheight="1" fontsize="26" />
+            <tmpro text="At the end of your turn,
+            put a token into play
+            with {guard} = Toughness." fontstyle="italic" flexiblewidth="6" flexibleheight="1" fontsize="20" />
+            </vlayout>
+            </hlayout>
+            </vlayout>
+                            ]]
+    })
+    return createMagicArmorDef({
+        id = "druid_grass_weave_sash",
+        name = "Grass-Weave Sash",
+        types = { druidType, magicArmorType, chestType, treasureType },
+        layout = cardLayout,
+        layoutPath = "icons/druid/druid_grass_weave_sash",
+        abilities = {
+            createAbility({
+                id = "main",
+                trigger = autoTrigger,
+                check = getPlayerHealth(currentPid).gte(10),
+                effect = gainToughnessEffect(2)
+            })
+        }
+    })
+end
+
+-- This is a global buff that converts toughness into a guard token
+-- at the end of the turn.  The token is sacrificed at the beginning
+-- of your next turn.
+
+-- We use this to track the players current toughness because we can't
+-- access the players current toughness directly.
+local old_gain_toughness = gainToughnessEffect
+function gainToughnessEffect(amount)
+    return incrementCounterEffect("toughness_counter", amount).seq(old_gain_toughness(amount))
+end
+
+function toughness_token_carddef()
+    local cardLayout = createLayout({
+        name = "Toughness Token",
+        art = "art/epicart/shield_of_tarken",
+        frame = "frames/Warrior_CardFrame",
+        cardTypeLabel = "Champion",
+        isGuard = true,
+        health = 1,
+        types = { },
+        text = "Toughness token."
+    })
+    return createChampionDef({
+        id = "toughness_token",
+        name = "Toughness Token",
+        acquireCost = 0,
+        health = 1,
+        isGuard = true,
+        layout = cardLayout,
+        types = { championType, humanType, fighterType },
+        factions = {},
+        abilities = {
+            createAbility({
+                id = "toughness_token_self_sacrifice",
+                trigger = startOfTurnTrigger,
+                activations = singleActivation,
+                effect = sacrificeSelf()
+            }),
+            sacrificeSelfOnLeavePlayAbility("toughness_token_leave_play_self_sacrifice")
+        }
+    })
+end
+
+function end_of_turn_toughness_converter_buff()
+    local ef = ifEffect(getCounter("toughness_counter").gte(1), 
+        old_gain_toughness(getCounter("toughness_counter").negate())
+            .seq(createCardEffect(toughness_token_carddef(), currentInPlayLoc))
+            .seq(grantHealthTarget(getCounter("toughness_counter").add(-1)).apply(
+                    selectLoc(currentInPlayLoc).where(isCardName("toughness_token"))
+                ))
+            .seq(resetCounterEffect("toughness_counter"))
+    )
+    return createGlobalBuff({
+        id = "end_of_turn_toughness_converter_buff",
+        name = "Toughness Converter",
+        abilities = {
+            createAbility({
+                id = "end_of_turn_toughness_converter_buff_ability",
+                trigger = endOfTurnTrigger,
+                effect = ef
+            })
+        }
+    })
+end
+--Necromancer
+--=========================================
+function necromancer_voidstone_carddef()
+	local cardLayout = createLayout({
+		name = "Voidstone",
+		art = "art/classes/necromancer/voidstone",
+		frame = "frames/necromancer_frames/necromancer_item_cardframe",
+        xmlText = [[
+                                <vlayout>
+            <hlayout>
+            <tmpro text="{gold_1}" flexibleheight="6" flexiblewidth="4" fontsize="50"/>
+            </hlayout>
+            <tmpro text=" " flexibleheight="1" flexiblewidth="4" fontsize="50"/>
+            <tmpro text="You may sacrifice a card in your discard pile or the market. If you sacrifice a champion this way, put a Skeleton Warrior into play." flexibleheight="9" flexiblewidth="1" fontsize="19"/>
+            </vlayout>
+                            ]]
+	})
+	return createItemDef({
+		id = "necromancer_voidstone",
+		name = "Voidstone",
+		types = { necromancerType, itemType },
+		layout = cardLayout,
+		playLocation = castPloc,
+		abilities = {
+			createAbility({
+				id = "main",
+				trigger = autoTrigger,
+                effect = gainGoldEffect(1)
+                    .seq(pushTargetedEffect({
+                        desc = "Sacrifice a card in your discard pile or the market.",
+                        validTargets = selectLoc(currentDiscardLoc).union(selectLoc(centerRowLoc)),
+                        min = 0,
+                        max = 1,
+                        targetEffect = ignoreTarget(ifEffect(
+    									selectTargets().where(isCardChampion()).count().gte(1),
+    									createCardEffect(necromancer_skeleton_warrior_carddef(), currentInPlayLoc)
+											)).seq(sacrificeTarget())
+                    }))
+			})
+        }
+	})
+end
+
+function replace_necromancer_dagger_buff()
+    local dagger_selector = function(player_id) 
+        return selectLoc(loc(player_id, handPloc)).union(selectLoc(loc(player_id, deckPloc)))
+            .where(isCardName("dagger")) 
+    end
+    local player_has_bone_dance_or_bloodrose = function(player_id) 
+        return selectLoc(loc(player_id, handPloc)).union(selectLoc(loc(player_id, deckPloc)))
+            .where(isCardName("necromancer_bone_dance").Or(isCardName("necromancer_bloodrose"))).count().gte(1) 
+    end
+    local ef = ifEffect(player_has_bone_dance_or_bloodrose(currentPid),
+            randomTarget(const(1), transformTarget("gold"))
+                .apply(dagger_selector(currentPid)))
+        .seq(ifEffect(player_has_bone_dance_or_bloodrose(oppPid),
+            randomTarget(const(1), transformTarget("gold"))
+                .apply(dagger_selector(oppPid))))
+        .seq(sacrificeSelf())
+
+    return createGlobalBuff({
+        id = "replace_necromancer_dagger",
+        name = "Necromancer Dagger Replacer",
+        abilities = {
+            createAbility({
+                id = "replace_necromancer_dagger_ability",
+                trigger = startOfGameTrigger,
+                effect = ef
+            })
+        }
     })
 end
 
 
-function hero8_carddef()
-    return createChampionDef({
-        id = "hero8",
-        name = "HopPocket",
-        types = { wizardType, halfDemonType, noStealType },
-        acquireCost = 0,
-        health = 8,
-        isGuard = false,
-        abilities = {
-            createAbility({
-                id = "hoppocket_auto",
-                trigger = onAcquireTrigger,
-                effect = sacrificeSelf()
-            })
-        },
-        layout = createLayout({
-            name = "HopPocket",
-            art = "avatars/halfdemon_wizard_female_02",
-            frame = "frames/coop_campaign_cardframe",
-            text = "DaKatSesMeow\nWinner of season 8",
-            health = 8,
-            isGuard = false
-        })
-    })
-end
-
-
-function endGame(g)
-end
 
 
 
-
-
-            function setupMeta(meta)
-                meta.name = "echoes_of_valor "
-                meta.minLevel = 0
-                meta.maxLevel = 0
-                meta.introbackground = ""
-                meta.introheader = ""
-                meta.introdescription = ""
-                meta.path = "Z:/Users/xTheC/Desktop/Git Repositories/Knights-of-Balance/Echoes of Valor/echoes_of_valor .lua"
-                meta.features = {
-}
-
-            end
