@@ -1524,6 +1524,53 @@ function necromancer_voidstone_carddef()
         }
 	})
 end
+--========================================================
+function necromancer_bone_dance_carddef()
+	local cardLayout = createLayout({
+		name = "Bone Dance",
+		art = "art/classes/necromancer/bone_waltz",
+		frame = "frames/necromancer_frames/necromancer_action_cardframe",
+        xmlText = [[
+                    <vlayout>
+<hlayout>
+<tmpro text="{combat_1}" flexibleheight="12" flexiblewidth="4" fontsize="75"/>
+</hlayout>
+<tmpro text="Prepare up to
+5 skeletons." flexibleheight="8" flexiblewidth="1" fontsize="30"/>
+</vlayout>
+                ]]
+	})
+    local warriors = selectLoc(currentInPlayLoc).where(isCardName("necromancer_skeleton_warrior").And(isCardExpended()))
+    local servants = selectLoc(currentInPlayLoc).where(isCardName("necromancer_skeleton_servant").And(isCardExpended()))
+	return createActionDef({
+		id = "necromancer_bone_dance",
+		name = "Bone Dance",
+		types = { necromancerType, actionType },
+		layout = cardLayout,
+		playLocation = castPloc,
+		abilities = {
+			createAbility({
+				id = "main",
+				trigger = autoTrigger,
+                effect = gainCombatEffect(1)
+                            .seq(resetCounterEffect("bone_dance_count"))
+                            .seq(incrementCounterEffect("bone_dance_count", warriors.count()))
+                            .seq(prepareTarget().apply(warriors.take(5)))
+                            .seq(ifElseEffect(
+                                getCounter("bone_dance_count").gte(5),
+                                nullEffect(),
+                                prepareTarget().apply(servants.take(
+                                    ifInt(getCounter("bone_dance_count").gte(4), 1,
+                                    ifInt(getCounter("bone_dance_count").gte(3), 2,
+                                    ifInt(getCounter("bone_dance_count").gte(2), 3,
+                                    ifInt(getCounter("bone_dance_count").gte(1), 4,
+                                    5))))
+                                ))
+                            ))
+			})
+        }
+	})
+end
 --====================================
 function replace_spring_blossom_buff()
     local spring_blossom_selector = function(player_id) 
