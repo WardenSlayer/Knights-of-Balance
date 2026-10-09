@@ -441,7 +441,7 @@ function ranger_twin_shot_carddef()
 		art = "art/t_ranger_twin_shot",
 		frame = "frames/ranger_cardframe",
         xmlText = [[
-                    <vlayout>
+<vlayout>
 <hlayout>
 <tmpro text="&lt;space=-0.3em&gt;{scrap}" flexibleheight="1" flexiblewidth="1" fontsize="55"/>
 <vlayout>
@@ -1321,10 +1321,10 @@ function monk_horn_of_ascendance_carddef()
         frame = "frames/monk_frames/monk_item_cardframe",
         cardTypeLabel = "Item",
         xmlText =[[<vlayout>
-                    <text text="Reserve 1" fontsize="22" fontstyle="italic"/>
-                    <text text="Draw 1.
-                    The next time you acquire a card this turn, gain 2 {gold}." fontsize="27"/>                           
-                </vlayout>]]
+<text text="Reserve 1" fontsize="22" fontstyle="italic"/>
+<text text="Draw 1.
+The next time you acquire a card this turn, gain 2 {gold}." fontsize="27"/>                           
+</vlayout>]]
     })
     return createItemDef({
         id = "monk_horn_of_ascendance",
@@ -1356,14 +1356,14 @@ function monk_wraps_of_strength_carddef()
         frame = "frames/monk_frames/monk_treasure_cardframe",
         cardTypeLabel = "Magic Armor",
         xmlText =[[<hlayout spacing="10" forcewidth="true">
-                    <icon text="{requiresHealth_25}" fontsize="90"/>    <vlayout spacing="1">
-                    <text text="
-                    If you have 4 
-                    Tao Lu 
-                    actions in play," fontsize="24"/>
-                                        <text text="{combat_2} {health_2}" fontsize="40"/>
-                                        </vlayout>
-                                    </hlayout>]]
+<icon text="{requiresHealth_25}" fontsize="90"/>    <vlayout spacing="1">
+<text text="
+If you have 4 
+Tao Lu 
+actions in play," fontsize="24"/>
+<text text="{combat_2} {health_2}" fontsize="40"/>
+</vlayout>
+</hlayout>]]
     })
     return createMagicArmorDef({
         id = card_name,
