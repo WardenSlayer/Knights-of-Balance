@@ -5,7 +5,7 @@ require 'timeoutai'
 require 'hardai_2'
 require 'aggressiveai'
 
-local debug_mode = true
+local debug_mode = false
 local test_alchhemist = false
 local test_barbarian = false
 local test_bard = false
