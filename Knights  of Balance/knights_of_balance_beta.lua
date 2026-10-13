@@ -399,7 +399,7 @@ function ranger_snapshot_carddef()
                     </hlayout>
                 </vlayout>]]
                     })
-
+	local bowsArrows = selectLoc(currentDiscardLoc).where(isCardType(bowType).Or(isCardType(arrowType)))
     return createHeroAbilityDef({
         id = "ranger_snapshot",
         name = "Snapshot",
@@ -412,24 +412,36 @@ function ranger_snapshot_carddef()
         abilities = {
             createAbility({
                 id = "ranger_snapshot_abbility",
-                effect = pushTargetedEffect({
-						desc = "Stun target champion",
-						min = 0,
-						max = 1,
-						validTargets = selectLoc(loc(oppPid, inPlayPloc)).where(isCardStunnable()),
-						targetEffect = stunTarget().seq(drawCardsEffect(1))
-                                        .seq(pushTargetedEffect({
-                                                desc = "Choose up to two arrows/bows from your discard pile to put into your hand.",
-                                                min = 0,
-                                                max = 2,
-                                                validTargets = selectLoc(loc(currentPid, discardPloc)).where(isCardType(arrowType).Or(isCardType(bowType))),
-                                                targetEffect = moveTarget(currentHandLoc),
-                                            })),
-					}),
-                cost = sacrificeSelfCost,
+				cost = sacrificeSelfCost,
                 trigger = uiTrigger,
                 promptType = showPrompt,
                 layout = cardLayout,
+                effect = ifEffect(
+    						selectLoc(loc(oppPid, inPlayPloc)).where(isCardStunnable()).count().gte(1),
+    						pushTargetedEffect({
+        						desc = "Stun target champion.",
+        						validTargets = selectLoc(loc(oppPid, inPlayPloc)).where(isCardStunnable()),
+        						min = 0,
+        						max = 1,
+        						targetEffect = stunTarget()
+    						})
+						)
+						.seq(ifElseEffect(
+    						bowsArrows.count().eq(0),
+    						drawCardsWithAnimation(1),
+    						ifElseEffect(
+        						bowsArrows.count().lte(2),
+        						moveTarget(currentHandLoc).apply(bowsArrows)
+            						.seq(drawCardsWithAnimation(1)),
+        						pushTargetedEffect({
+            						desc = "Put up to 2 bows or arrows from discard into hand.",
+            						validTargets = bowsArrows,
+	            					min = 0,
+            						max = 2,
+            						targetEffect = moveTarget(currentHandLoc).seq(ignoreTarget(drawCardsWithAnimation(1)))
+        						})
+    						)
+						))
             })
         }
         })
