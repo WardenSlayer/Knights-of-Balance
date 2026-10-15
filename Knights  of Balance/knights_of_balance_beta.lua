@@ -1137,7 +1137,7 @@ function thief_blinding_powder_carddef()
     local return_to_deck_ability = createAbility({
         id = "return_to_deck_ability",
         trigger = abilityTrigger(return_to_deck_trigger),
-        effect = moveToBottomDeckTarget(true, 0).apply(selectSource())
+        effect = moveToBottomDeckTarget(true, 0, oppPid).apply(selectSource())
     })
     local return_to_deck_slot = createAbilitySlot({
         ability = return_to_deck_ability,
