@@ -701,6 +701,7 @@ function bard_dancing_blade_carddef()
                 effect = gainCombatEffect(2).seq(gainGoldEffect(1)),
                 cost = expendCost,
                 trigger = autoTrigger,
+                activations = multipleActivations,
                 tags = { gainCombatTag, aiPlayAllTag }
             })
         }
