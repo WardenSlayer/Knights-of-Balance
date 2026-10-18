@@ -1817,6 +1817,7 @@ function necromancer_bone_dance_carddef()
 		name = "Bone Dance",
 		types = { necromancerType, actionType },
 		layout = cardLayout,
+		playAllType = blockPlayType,
 		playLocation = castPloc,
 		abilities = {
 			createAbility({
