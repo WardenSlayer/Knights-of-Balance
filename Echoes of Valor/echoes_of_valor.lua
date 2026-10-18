@@ -1299,7 +1299,7 @@ function thief_blinding_powder_carddef()
                         <vlayout forceheight="false" spacing = "0">
                             <text text="Reserve 2" fontsize="16" fontstyle="italic"/>
                             <icon text="{gold_3}" fontsize="40"/>
-                            <text text="You may return target champion to the bottom of its owner's deck" fontsize="20"/> 
+                            <text text="You may move target champion to the bottom of opponent's deck" fontsize="20"/> 
                         </vlayout>
                     </vlayout>
                     ]]
@@ -1331,10 +1331,10 @@ function thief_blinding_powder_carddef()
                 trigger = autoTrigger,
                 activations = singleActivation,
                 effect = gainGoldEffect(3).seq(pushTargetedEffect({
-                    desc = "Return target champion to the bottom of its owner's deck.",
+                    desc = "Move opponent's champion to the bottom of their deck.",
                     min = 0,
                     max = 1,
-                    validTargets = selectLoc(loc(currentPid, inPlayPloc)).union(selectLoc(loc(oppPid, inPlayPloc))).where(isCardChampion()),
+                    validTargets = selectLoc(loc(oppPid, inPlayPloc)).where(isCardChampion()),
                     targetEffect = addSlotToTarget(return_to_deck_slot).seq(fireAbilityTriggerForTarget(return_to_deck_trigger)),
                 }))
             }),
