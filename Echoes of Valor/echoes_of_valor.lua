@@ -34,11 +34,11 @@ local function chooseWho()
                             .seq(ifElseEffect(selectLoc(theirBuffs).where(isCardType(elfType)).count().gte(1),
                                 drawToLocationEffect(3, loc(oppPid, handPloc)),
                                 drawToLocationEffect(5, loc(oppPid, handPloc))))
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero4"))))
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero5"))))
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero6"))))
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero7"))))
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero8"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero4"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero5"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero6"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero7"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero8"))))
                         ,
                 layout = createLayout({
                                 name = "May I?",
@@ -58,11 +58,11 @@ local function chooseWho()
                                 drawToLocationEffect(3, loc(oppPid, handPloc)),
                                 drawToLocationEffect(5, loc(oppPid, handPloc))))),
                         })
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero4"))))
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero5"))))
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero6"))))
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero7"))))
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero8"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero4"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero5"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero6"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero7"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero8"))))
                         ,
                         layout = createLayout({
                                 name = "Let's See",
@@ -74,11 +74,11 @@ local function chooseWho()
                 effect = ifElseEffect(selectLoc(theirBuffs).where(isCardType(elfType)).count().gte(1),
                                 drawToLocationEffect(1, loc(oppPid, handPloc)),
                                 drawToLocationEffect(3, loc(oppPid, handPloc)))
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero4"))))
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero5"))))
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero6"))))
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero7"))))
-                        .seq(sacrificeTarget().apply(selectLoc(centerRowLoc).where(isCardName("hero8"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero4"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero5"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero6"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero7"))))
+                        .seq(moveTarget(loc(currentPid, sacrificePloc)).apply(selectLoc(centerRowLoc).where(isCardName("hero8"))))
                         ,
                 layout = createLayout({
                                 name = "Please, Go Ahead",
