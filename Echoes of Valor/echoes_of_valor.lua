@@ -856,7 +856,7 @@ function bard_necros_dirge_carddef()
     local cardLayout = createLayout({
         name = "Necros Dirge",
         art = "art/classes/bard/bard_necros_dirge",
-        frame = "frames/bard_frames/bard_action_cardframe",
+        frame = "frames/bard_frames/bard_action_necro_cardframe",
         cardTypeLabel = "Action",
         xmlText = [[<vlayout forceheight="false" spacing="6">
                         <hlayout spacing="10">
