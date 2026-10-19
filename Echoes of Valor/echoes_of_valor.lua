@@ -6,11 +6,23 @@ require 'hardai_2'
 require 'aggressiveai'
 
 
---Aliases
+
+--Debug flags for testing specific classes
 local debug_mode = false
+local test_alchhemist = false
+local test_barbarian = false
+local test_bard = false
+local test_cleric = false
+local test_druid = false
+local test_fighter = false
+local test_monk = false
+local test_necromancer = false
+local test_ranger = false
+local test_thief = false
+local test_wizard = false
 --
 --
---
+--Aliases
 local player1 = currentPid
 local player2 = oppPid
 local myDeck = loc(currentPid, deckPloc)
@@ -23,7 +35,8 @@ local myReserve = loc(currentPid, reservePloc)
 local theirReserve = loc(oppPid, reservePloc)
 local myBuffs = loc(currentPid, buffsPloc)
 local theirBuffs = loc(oppPid, buffsPloc)
-
+--
+--========================================================================================
 local function chooseWho()
     local eff =  pushChoiceEffect({
         choices = {
@@ -182,7 +195,7 @@ function setupGame(g)
         toughness_token_carddef()
          })
     standardSetup(g, {
-        description = "Echoes of Valor<br>The Realms Rising Commuity Event<br>Official Script<br>Special Thanks to Emil",
+        description = "Echoes of Valor<br>The Realms Rising Commuity Event<br>Official Script<br>Special Thanks to Emil, Jseph, and Azgalor",
         playerOrder = { plid1, plid2 },
         ai = ai.CreateKillSwitchAi(createAggressiveAI(),  createHardAi2()),
         timeoutAi = createTimeoutAi(),
@@ -195,8 +208,9 @@ function setupGame(g)
                 init = {
                     fromEnv = plid1
                 },
-                cards = {
+                cards = debug_mode and get_debug_cardsP1() or {
                     buffs = {
+                        --Mirror changes here to the get_debug_cardsP1 function for player 1
                         chooseWho(),
                         drawCardsCountAtTurnEndDef(0),--- THIS
                         p1DrawBuffDef(),--- THIS
@@ -217,12 +231,10 @@ function setupGame(g)
                 init = {
                     fromEnv = plid2
                 },
-                cards = {
+                cards = debug_mode and get_debug_cardsP2() or {
                     buffs = {
+                        --Mirror changes here to the get_debug_cardsP2 function for player 2
                         drawCardsCountAtTurnEndDef(5),
-                        --replace_spring_blossom_buff(),
-                        --replace_bard_dagger_buff(),
-                        --replace_necromancer_dagger_buff(),
                         end_of_turn_toughness_converter_buff(),
                         discardCardsAtTurnStartDef(),
                         fatigueCount(40, 1, "FatigueP2")
@@ -1878,7 +1890,302 @@ function replace_necromancer_dagger_buff()
     })
 end
 
+-- local player1_buffs = {
+--     --Mirror changes here to the init player buffs function for player 1
+--         chooseWho(),
+--         drawCardsCountAtTurnEndDef(0),--- THIS
+--         p1DrawBuffDef(),--- THIS
+--         p1SkillsBuffDef(),--- THIS
+--         replace_spring_blossom_buff(),
+--         replace_bard_dagger_buff(),
+--         replace_necromancer_dagger_buff(),
+--         end_of_turn_toughness_converter_buff(),                        
+--         discardCardsAtTurnStartDef(),
+--         fatigueCount(40, 1, "FatigueP1"),
+--     }
+-- local player2_buffs = {
+--                         --Mirror changes here to the init player buffs function for player 2
+--                         drawCardsCountAtTurnEndDef(5),
+--                         --replace_spring_blossom_buff(),
+--                         --replace_bard_dagger_buff(),
+--                         --replace_necromancer_dagger_buff(),
+--                         end_of_turn_toughness_converter_buff(),
+--                         discardCardsAtTurnStartDef(),
+--                         fatigueCount(40, 1, "FatigueP2")
+--                     }
+--
+--
+--========================================================================================
+--Debug Functions: No New Code Below This Section!!!!!!!!!!!!!!!!!!!!!!!
+--
+--Notes: Here you can define debug cards for player 1 to facilitate testing different scenarios. 
+--         Id like to find a way to make the buff lists for both players one local for each player.
+--
+function get_debug_cardsP1()
+    --Mirror changes here to the init player buffs function for player 1
+    local player_buffs = {
+        chooseWho(),
+        drawCardsCountAtTurnEndDef(0),--- THIS
+        p1DrawBuffDef(),--- THIS
+        p1SkillsBuffDef(),--- THIS
+        replace_spring_blossom_buff(),
+        replace_bard_dagger_buff(),
+        replace_necromancer_dagger_buff(),
+        end_of_turn_toughness_converter_buff(),                        
+        discardCardsAtTurnStartDef(),
+        fatigueCount(40, 1, "FatigueP1"),
+    }
+    if test_monk then
+        return {
+            reserve = {
+                { qty = 1, card = monk_horn_of_ascendance_carddef() },
+            },
+            deck = {
+                { qty = 4, card = monk_spring_blossom_carddef() },
+            },
+            hand = {
+                { qty = 1, card = monk_horn_of_ascendance_carddef() },
+                { qty = 6, card = monk_spring_blossom_carddef() },
+                { qty = 2, card = monk_cobra_fang_carddef() },
+            },
+            discard = {
+                { qty = 2, card = monk_spring_blossom_carddef() },
+            },
+            skills = {
+                { qty = 1, card = monk_wraps_of_strength_carddef() },
+            },
+            buffs = player_buffs
+        }
+    elseif test_cleric then
+        return {
+            reserve = {
+                { qty = 1, card = cleric_enduring_follower_carddef() },
+            },
+            deck = {
+                { qty = 4, card = cleric_everburning_candle_carddef() },
+                 { qty = 2, card = cleric_prayer_beads_carddef() },
+            },
+            hand = {
+                { qty = 1, card = cleric_everburning_candle_carddef() },
+                { qty = 1, card = cleric_prayer_beads_carddef()},
+                { qty = 1, card = cleric_imperial_sailor_carddef() },
+            },
+            discard = {
+                 { qty = 2, card = cleric_imperial_sailor_carddef() },
+                 { qty = 1, card = cleric_enduring_follower_carddef() },
+                 { qty = 1, card = cleric_follower_b_carddef() }              
+            },
+            skills = {
+                --{ qty = 1, card = cleric_shining_breastplate_carddef() },
+            },
+            buffs = player_buffs
+        }
+    elseif test_bard then
+        return {
+            reserve = {
+            },
+            deck = {
+                { qty = 1, card = dagger_carddef()}
+            },
+            hand = {
+                { qty = 1, card = bard_necros_dirge_carddef() },
+                { qty = 1, card = bard_dancing_blade_carddef() },
+            },
+            discard = {
+            },
+            skills = {
+                { qty = 1, card = bard_collecting_cap_carddef() },
+            },
+            buffs = player_buffs
+        }
+    elseif test_ranger then
+        return {
+            reserve = {
+            },
+            deck = {
+            },
+            hand = {
+                { qty = 1, card = ranger_honed_black_arrow_carddef() },
+                { qty = 1, card = ranger_light_crossbow_carddef() },
+            },
+            discard = {
+                { qty = 1, card = ranger_honed_black_arrow_carddef() },
+                { qty = 1, card = ranger_black_arrow_carddef() },
+                { qty = 1, card = ranger_light_crossbow_carddef() },
+            },
+            skills = {
+                { qty = 1, card = ranger_snapshot_carddef() },
+            },
+            buffs = player_buffs
+        }
+    else
+        return {
+            reserve = {
+                { qty = 1, card = wizard_treasure_map_carddef() },
+                { qty = 1, card = ranger_parrot_carddef() },
+                { qty = 1, card = monk_horn_of_ascendance_carddef() }
 
+            },
+            deck = {
+                { qty = 1, card = dagger_carddef() },
+                { qty = 1, card = necromancer_bloodrose_carddef() },
+            },
+            hand = {
+                { qty = 1, card = thief_blinding_powder_carddef() },
+                { qty = 1, card = monk_horn_of_ascendance_carddef() },
+                { qty = 1, card = thief_enchanted_garrote_carddef() },
+                { qty = 1, card = ranger_light_crossbow_carddef() },
+                { qty = 1, card = ranger_honed_black_arrow_carddef() },
+                { qty = 2, card = cleric_follower_b_carddef() },
+                { qty = 2, card = cleric_imperial_sailor_carddef() },
+                { qty = 1, card = cleric_brightstar_shield_carddef() },
+                { qty = 1, card = cleric_everburning_candle_carddef() },
+                { qty = 1, card = sway_carddef() },
+                { qty = 1, card = bard_dancing_blade_carddef() },
+                { qty = 1, card = bard_necros_dirge_carddef() },
+            },
+            discard = {
+                { qty = 2, card = cleric_follower_b_carddef() },
+                { qty = 1, card = cleric_follower_b_carddef() },
+            },
+            skills = {
+                { qty = 1, card = cleric_shining_breastplate_carddef() },
+                { qty = 1, card = druid_grass_weave_sash_carddef() },
+                { qty = 1, card = bard_collecting_cap_carddef() },
+            },
+            buffs = player_buffs
+        }
+    end
+end
 
+function get_debug_cardsP2()
+    local player_buffs = {
+                        --Mirror changes here to the init player buffs function for player 2
+                        drawCardsCountAtTurnEndDef(5),
+                        end_of_turn_toughness_converter_buff(),
+                        discardCardsAtTurnStartDef(),
+                        fatigueCount(40, 1, "FatigueP2")
+    }
+    if test_monk then
+        return {
+            reserve = {
+                { qty = 1, card = monk_horn_of_ascendance_carddef() },
+            },
+            deck = {
+                { qty = 4, card = monk_spring_blossom_carddef() },
+            },
+            hand = {
+                { qty = 1, card = monk_horn_of_ascendance_carddef() },
+                { qty = 6, card = monk_spring_blossom_carddef() },
+                { qty = 2, card = monk_cobra_fang_carddef() },
+            },
+            discard = {
+                { qty = 2, card = monk_spring_blossom_carddef() },
+            },
+            skills = {
+                { qty = 1, card = monk_wraps_of_strength_carddef() },
+            },
+            buffs = player_buffs
+        }
+    elseif test_cleric then
+        return {
+            reserve = {
+                { qty = 1, card = cleric_enduring_follower_carddef() },
+            },
+            deck = {
+                { qty = 4, card = cleric_everburning_candle_carddef() },
+                 { qty = 2, card = cleric_prayer_beads_carddef() },
+            },
+            hand = {
+                { qty = 1, card = cleric_everburning_candle_carddef() },
+                { qty = 1, card = cleric_prayer_beads_carddef()},
+                { qty = 1, card = cleric_imperial_sailor_carddef() },
+            },
+            discard = {
+                 { qty = 2, card = cleric_imperial_sailor_carddef() },
+                 { qty = 1, card = cleric_enduring_follower_carddef() },
+                 { qty = 1, card = cleric_follower_b_carddef() }              
+            },
+            skills = {
+                --{ qty = 1, card = cleric_shining_breastplate_carddef() },
+            },
+            buffs = player_buffs
+        }
+    elseif test_bard then
+        return {
+            reserve = {
+            },
+            deck = {
+                { qty = 1, card = dagger_carddef()}
+            },
+            hand = {
+                { qty = 1, card = bard_necros_dirge_carddef() },
+                { qty = 1, card = bard_dancing_blade_carddef() },
+            },
+            discard = {
+            },
+            skills = {
+                { qty = 1, card = bard_collecting_cap_carddef() },
+            },
+            buffs = player_buffs
+        }
+    elseif test_ranger then
+        return {
+            reserve = {
+            },
+            deck = {
+            },
+            hand = {
+                { qty = 1, card = ranger_honed_black_arrow_carddef() },
+                { qty = 1, card = ranger_light_crossbow_carddef() },
+            },
+            discard = {
+                { qty = 1, card = ranger_honed_black_arrow_carddef() },
+                { qty = 1, card = ranger_black_arrow_carddef() },
+                { qty = 1, card = ranger_light_crossbow_carddef() },
+            },
+            skills = {
+                { qty = 1, card = ranger_snapshot_carddef() },
+            },
+            buffs = player_buffs
+        }
+    else
+        return {
+            reserve = {
+                { qty = 1, card = wizard_treasure_map_carddef() },
+                { qty = 1, card = ranger_parrot_carddef() },
+                { qty = 1, card = monk_horn_of_ascendance_carddef() }
 
-
+            },
+            deck = {
+                { qty = 1, card = dagger_carddef() },
+                { qty = 1, card = necromancer_bloodrose_carddef() },
+            },
+            hand = {
+                { qty = 1, card = thief_blinding_powder_carddef() },
+                { qty = 1, card = monk_horn_of_ascendance_carddef() },
+                { qty = 1, card = thief_enchanted_garrote_carddef() },
+                { qty = 1, card = ranger_light_crossbow_carddef() },
+                { qty = 1, card = ranger_honed_black_arrow_carddef() },
+                { qty = 2, card = cleric_follower_b_carddef() },
+                { qty = 2, card = cleric_imperial_sailor_carddef() },
+                { qty = 1, card = cleric_brightstar_shield_carddef() },
+                { qty = 1, card = cleric_everburning_candle_carddef() },
+                { qty = 1, card = sway_carddef() },
+                { qty = 1, card = bard_dancing_blade_carddef() },
+                { qty = 1, card = bard_necros_dirge_carddef() },
+            },
+            discard = {
+                { qty = 2, card = cleric_follower_b_carddef() },
+                { qty = 1, card = cleric_follower_b_carddef() },
+            },
+            skills = {
+                { qty = 1, card = cleric_shining_breastplate_carddef() },
+                { qty = 1, card = druid_grass_weave_sash_carddef() },
+                { qty = 1, card = bard_collecting_cap_carddef() },
+            },
+            buffs = player_buffs
+        }
+    end
+end
+--========================================================================================
